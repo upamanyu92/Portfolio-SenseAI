@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -7,10 +8,13 @@ from arq import create_pool
 from arq.connections import RedisSettings
 from arq.jobs import Job
 from fastapi import FastAPI, File, HTTPException, UploadFile
+from redis.exceptions import RedisError
 
 from app.schemas import JobStatusResponse, UploadResponse
 
 ALLOWED_EXTENSIONS = {".pdf", ".xlsx", ".docx"}
+
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -18,7 +22,10 @@ async def lifespan(app: FastAPI):
     redis_url = os.getenv("REDIS_URL")
     app.state.redis = None
     if redis_url:
-        app.state.redis = await create_pool(RedisSettings.from_dsn(redis_url))
+        try:
+            app.state.redis = await create_pool(RedisSettings.from_dsn(redis_url))
+        except (RedisError, OSError):
+            logger.exception("Failed to connect to Redis at startup; queue endpoints will return 503")
     try:
         yield
     finally:
