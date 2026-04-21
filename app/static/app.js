@@ -36,7 +36,7 @@ const DEFAULT_STATE = {
   recommendations: [
     { ticker: "TCS",      action: "BUY",  reason: "Sector Trend", price: "$186.70" },
     { ticker: "RELIANCE", action: "SELL", reason: "Overvalued",   price: "$169.00" },
-    { ticker: "INFY",     action: "BUY",  reason: "Oven Trend",   price: "$123.70" },
+    { ticker: "INFY",     action: "BUY",  reason: "Sector Trend", price: "$123.70" },
     { ticker: "REDI",     action: "SELL", reason: "Overvalued",   price: "$153.50" },
   ],
 };
@@ -241,7 +241,7 @@ function renderRecommendations(recs) {
         <td class="ticker-cell">${tickerDisp}</td>
         <td class="action-cell">
           <span class="action-tag ${actionClass}">
-            ${rec.action} ${rec.ticker} ${icon}
+            ${rec.action} ${icon}
           </span>
         </td>
         <td class="reason-cell">${escHtml(rec.reason)}</td>
@@ -304,7 +304,7 @@ function analysisToState(result) {
   const recs = tickers.map((t, i) => ({
     ticker: t,
     action: score >= 55 ? (i % 3 === 1 ? "SELL" : "BUY") : (i % 3 !== 1 ? "SELL" : "BUY"),
-    reason: i % 2 === 0 ? "Sector Trend" : "Overvalued",
+    reason: i % 2 === 0 ? "Sector Trend" : "Overvalued",  // was "Oven Trend" typo
     price:  `$${(100 + i * 17.3).toFixed(2)}`,
   }));
 
