@@ -53,7 +53,7 @@ async def get_portfolio_analysis(sanitized_text: str) -> Dict[str, Any]:
         "Analyze the following stock holdings. "
         "1. Identify tickers and quantities. "
         "2. Provide a sentiment score (0-100) based on current market trends. "
-        "3. Suggest one Better Portfolio move. "
+        "3. Suggest one better portfolio move. "
         f"Data: {sanitized_text}"
     )
 
@@ -97,6 +97,7 @@ async def get_portfolio_analysis(sanitized_text: str) -> Dict[str, Any]:
     except Exception:
         return _fallback_analysis(sanitized_text)
 
+    # Expected provider response shape: {"analysis": {...}}.
     analysis = data.get("analysis") if isinstance(data, dict) else None
     if not isinstance(analysis, dict):
         return _fallback_analysis(sanitized_text)

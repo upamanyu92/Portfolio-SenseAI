@@ -1,5 +1,6 @@
 import asyncio
 import os
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from arq import create_pool
@@ -9,23 +10,24 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 
 from app.schemas import JobStatusResponse, UploadResponse
 
-app = FastAPI(title="PortfolioSense AI")
 ALLOWED_EXTENSIONS = {".pdf", ".xlsx", ".docx"}
 
 
-@app.on_event("startup")
-async def startup() -> None:
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     redis_url = os.getenv("REDIS_URL")
     app.state.redis = None
     if redis_url:
         app.state.redis = await create_pool(RedisSettings.from_dsn(redis_url))
+    try:
+        yield
+    finally:
+        redis = getattr(app.state, "redis", None)
+        if redis:
+            await redis.close()
 
 
-@app.on_event("shutdown")
-async def shutdown() -> None:
-    redis = getattr(app.state, "redis", None)
-    if redis:
-        await redis.close()
+app = FastAPI(title="PortfolioSense AI", lifespan=lifespan)
 
 
 @app.get("/health")

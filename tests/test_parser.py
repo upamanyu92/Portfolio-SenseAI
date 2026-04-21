@@ -16,6 +16,7 @@ class ParserTests(unittest.TestCase):
 
         file_obj = BytesIO()
         workbook.save(file_obj)
+        file_obj.seek(0)
 
         extracted = extract_text(file_obj.getvalue(), ".xlsx")
         self.assertIn("Ticker,Qty", extracted)
@@ -26,6 +27,7 @@ class ParserTests(unittest.TestCase):
         document.add_paragraph("INFY 25")
         file_obj = BytesIO()
         document.save(file_obj)
+        file_obj.seek(0)
 
         extracted = extract_text(file_obj.getvalue(), ".docx")
         self.assertEqual(extracted, "INFY 25")
