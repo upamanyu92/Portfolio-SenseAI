@@ -8,8 +8,7 @@ from app.analyzer import get_portfolio_analysis, sanitize_data
 from app.parser import extract_text
 
 
-async def process_holding_statement(ctx: dict, file_bytes: bytes, filename: str) -> dict:
-    del ctx
+async def process_holding_statement(_ctx: dict, file_bytes: bytes, filename: str) -> dict:
     extension = Path(filename).suffix.lower()
     extracted = extract_text(file_bytes=file_bytes, extension=extension)
     sanitized = sanitize_data(extracted)

@@ -4,14 +4,14 @@ from typing import Any, Dict
 
 import httpx
 
-PAN_PATTERN = re.compile(r"\b[A-Z]{5}[0-9]{4}[A-Z]\b")
-ID_PATTERN = re.compile(r"\b\d{10,12}\b")
+PAN_CARD_PATTERN = re.compile(r"\b[A-Z]{5}[0-9]{4}[A-Z]\b")
+PHONE_OR_ID_PATTERN = re.compile(r"\b\d{10,12}\b")
 TICKER_PATTERN = re.compile(r"\b[A-Z]{2,10}\b")
 
 
 def sanitize_data(text: str) -> str:
-    text = PAN_PATTERN.sub("[PAN_REDACTED]", text)
-    text = ID_PATTERN.sub("[ID_REDACTED]", text)
+    text = PAN_CARD_PATTERN.sub("[PAN_REDACTED]", text)
+    text = PHONE_OR_ID_PATTERN.sub("[ID_REDACTED]", text)
     return text
 
 
@@ -97,7 +97,9 @@ async def get_portfolio_analysis(sanitized_text: str) -> Dict[str, Any]:
     except Exception:
         return _fallback_analysis(sanitized_text)
 
-    # Expected provider response shape: {"analysis": {...}}.
+    # Expected provider response shape: {"analysis": {...}} where
+    # analysis contains the schema-constrained payload. If the provider
+    # returns a different shape, we fall back to deterministic local logic.
     analysis = data.get("analysis") if isinstance(data, dict) else None
     if not isinstance(analysis, dict):
         return _fallback_analysis(sanitized_text)
