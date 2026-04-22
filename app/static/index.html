@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PortfolioSense AI – Dashboard</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- ═══════════════════ HEADER ═══════════════════ -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo">
+        <svg viewBox="0 0 36 36" width="32" height="32" aria-hidden="true">
+          <defs>
+            <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#00d4b8"/>
+              <stop offset="100%" stop-color="#1a6fd4"/>
+            </linearGradient>
+          </defs>
+          <rect width="36" height="36" rx="8" fill="url(#logoGrad)"/>
+          <polyline points="5,26 12,18 18,22 24,12 31,16"
+                    fill="none" stroke="#fff" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="12" cy="18" r="2" fill="#fff"/>
+          <circle cx="18" cy="22" r="2" fill="#fff"/>
+          <circle cx="24" cy="12" r="2" fill="#fff"/>
+        </svg>
+        <span class="logo-text">PortfolioSense <em>AI</em></span>
+      </div>
+      <div class="search-bar">
+        <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="9" cy="9" r="6"/>
+          <line x1="14" y1="14" x2="19" y2="19"/>
+        </svg>
+        <input type="text" placeholder="Search ticker, sector…" aria-label="Search" />
+      </div>
+    </div>
+    <nav class="header-nav" aria-label="Primary navigation">
+      <a href="#" class="nav-link active" aria-current="page">Dashboard</a>
+      <a href="#" class="nav-link">Markets</a>
+      <a href="#" class="nav-link">Account</a>
+      <a href="#" class="nav-link">Learn</a>
+    </nav>
+    <div class="header-right">
+      <button class="icon-btn" aria-label="Notifications">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <span class="notif-dot" aria-hidden="true"></span>
+      </button>
+      <div class="avatar" aria-label="User account">U</div>
+    </div>
+  </header>
+
+  <!-- ═══════════════════ MAIN DASHBOARD ═══════════════════ -->
+  <main class="dashboard">
+
+    <!-- ══════ LEFT COLUMN: Upload & History ══════ -->
+    <section class="column column-left" aria-label="File Upload">
+      <h2 class="column-title">Secure File Upload &amp; History</h2>
+
+      <!-- Upload card -->
+      <div class="upload-card" id="upload-drop-zone" role="region" aria-label="Upload your holding statement">
+        <div class="upload-card-inner">
+          <p class="upload-heading">UPLOAD YOUR<br/>HOLDING STATEMENT</p>
+          <p class="upload-sub">Privacy First. Automatically Sanitized.</p>
+
+          <!-- Funnel + lock illustration -->
+          <div class="funnel-wrap" aria-hidden="true">
+            <svg viewBox="0 0 120 140" width="100" class="funnel-svg">
+              <defs>
+                <linearGradient id="funnelGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#1a9fd4"/>
+                  <stop offset="60%" stop-color="#7c3aed"/>
+                  <stop offset="100%" stop-color="#00d4b8"/>
+                </linearGradient>
+                <filter id="funnelGlow">
+                  <feGaussianBlur stdDeviation="3" result="blur"/>
+                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+              </defs>
+              <!-- funnel body -->
+              <path d="M8,10 L112,10 L72,58 L72,110 L48,98 L48,58 Z"
+                    fill="url(#funnelGrad)" filter="url(#funnelGlow)" opacity="0.92"/>
+              <!-- funnel rim -->
+              <path d="M8,10 L112,10 L72,58 L48,58 Z"
+                    fill="none" stroke="rgba(0,212,184,0.5)" stroke-width="1.5"/>
+              <!-- document lines on the funnel -->
+              <line x1="40" y1="28" x2="80" y2="28" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" stroke-linecap="round"/>
+              <line x1="35" y1="38" x2="85" y2="38" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <!-- lock badge -->
+            <div class="lock-badge">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#00d4b8" stroke-width="2.5" aria-hidden="true">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <span>Secure</span>
+            </div>
+          </div>
+
+          <!-- file input -->
+          <label class="select-file-btn" for="file-input">
+            <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M10 3v10M5 8l5-5 5 5"/>
+              <path d="M3 14v2a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2"/>
+            </svg>
+            SELECT FILE FROM DEVICE
+          </label>
+          <input type="file" id="file-input" accept=".pdf,.xlsx,.docx,.doc" class="sr-only" aria-label="Choose a holding statement file"/>
+
+          <p class="upload-hint">Supported: .PDF, .XLSX, .DOCX, .DOC, etc.</p>
+          <div class="file-type-icons" aria-hidden="true">
+            <span class="ft-icon">PDF</span>
+            <span class="ft-icon">XLS</span>
+            <span class="ft-icon">DOC</span>
+          </div>
+        </div>
+      </div><!-- /upload-card -->
+
+      <!-- Recent Activity -->
+      <div class="recent-activity">
+        <h3 class="section-subtitle">Recent Activity</h3>
+        <ul class="activity-list" id="activity-list" aria-label="Recent upload history">
+          <!-- populated by app.js -->
+        </ul>
+        <p class="activity-empty" id="activity-empty">No recent uploads</p>
+      </div>
+    </section><!-- /column-left -->
+
+    <!-- ══════ MIDDLE COLUMN: Portfolio Report ══════ -->
+    <section class="column column-middle" aria-label="Portfolio Report">
+      <h2 class="column-title">Portfolio Health &amp; Allocation Snapshot</h2>
+
+      <div class="portfolio-header">
+        <h1 class="report-title">YOUR PORTFOLIO REPORT</h1>
+        <p class="report-sub">Last Analyzed: <span id="last-analyzed">–</span></p>
+      </div>
+
+      <div class="middle-grid">
+        <!-- Health Score card -->
+        <div class="card health-card">
+          <div class="card-header">
+            <span class="card-title">Portfolio Health Score</span>
+            <button class="card-menu-btn" aria-label="More options">⋯</button>
+          </div>
+          <div class="gauge-wrap">
+            <svg viewBox="0 0 200 160" class="gauge-svg" aria-label="Health score gauge" role="img">
+              <defs>
+                <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#7c3aed"/>
+                  <stop offset="50%" stop-color="#1a9fd4"/>
+                  <stop offset="100%" stop-color="#00d4b8"/>
+                </linearGradient>
+                <filter id="gaugeGlow">
+                  <feGaussianBlur stdDeviation="4" result="blur"/>
+                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+              </defs>
+              <!-- background track (270°) -->
+              <circle cx="100" cy="100" r="66"
+                      fill="none" stroke="#1a2a4a" stroke-width="12"
+                      stroke-dasharray="311.02 103.67"
+                      transform="rotate(135 100 100)"/>
+              <!-- progress arc -->
+              <circle cx="100" cy="100" r="66"
+                      id="gauge-progress"
+                      fill="none" stroke="url(#gaugeGrad)" stroke-width="12"
+                      stroke-linecap="round"
+                      stroke-dasharray="242.60 172.09"
+                      transform="rotate(135 100 100)"
+                      filter="url(#gaugeGlow)"/>
+              <!-- score text -->
+              <text x="100" y="96" text-anchor="middle"
+                    fill="white" font-size="40" font-weight="700"
+                    id="gauge-score">78</text>
+              <text x="100" y="115" text-anchor="middle"
+                    fill="#5a7a9a" font-size="13"
+                    id="gauge-fraction">78 / 100</text>
+            </svg>
+            <p class="gauge-status optimized" id="gauge-status">OPTIMIZED</p>
+          </div>
+        </div>
+
+        <!-- Asset Allocation card -->
+        <div class="card alloc-card">
+          <div class="card-header">
+            <span class="card-title">Asset Allocation</span>
+            <button class="card-menu-btn" aria-label="More options">⋯</button>
+          </div>
+          <div class="donut-wrap">
+            <canvas id="assetAllocChart" width="140" height="140" aria-label="Asset allocation donut chart" role="img"></canvas>
+          </div>
+          <ul class="donut-legend" id="alloc-legend" aria-label="Asset allocation legend">
+            <li><span class="legend-dot" style="background:#00d4b8"></span>IT: 25%</li>
+            <li><span class="legend-dot" style="background:#1a9fd4"></span>Pharma: 18%</li>
+            <li><span class="legend-dot" style="background:#5a6a9a"></span>Energy: 15%</li>
+            <li><span class="legend-dot" style="background:#2a3a6a"></span>Others: 42%</li>
+          </ul>
+        </div>
+
+        <!-- Asset Transparency card -->
+        <div class="card transparency-donut-card">
+          <div class="card-header">
+            <span class="card-title">Asset Transparency</span>
+            <button class="card-menu-btn" aria-label="More options">⋯</button>
+          </div>
+          <div class="donut-wrap">
+            <canvas id="assetTransChart" width="140" height="140" aria-label="Asset transparency donut chart" role="img"></canvas>
+          </div>
+        </div>
+
+        <!-- AI Investment Pulse card -->
+        <div class="card pulse-card">
+          <div class="card-header">
+            <span class="card-title">AI Investment Pulse</span>
+            <button class="card-menu-btn" aria-label="More options">⋯</button>
+          </div>
+          <div class="bar-wrap">
+            <canvas id="pulseChart" width="200" height="130" aria-label="AI investment pulse bar chart" role="img"></canvas>
+          </div>
+          <div class="pulse-labels">
+            <span class="pulse-label bullish" id="lbl-bullish">Bullish: 60%</span>
+            <span class="pulse-label neutral" id="lbl-neutral">Neutral: 30%</span>
+            <span class="pulse-label bearish" id="lbl-bearish">Bearish: 10%</span>
+          </div>
+        </div>
+      </div><!-- /middle-grid -->
+    </section><!-- /column-middle -->
+
+    <!-- ══════ RIGHT COLUMN: Insights & Trade Signals ══════ -->
+    <section class="column column-right" aria-label="Trade Signals">
+      <h2 class="column-title">Detailed Insights &amp; Trade Signals</h2>
+
+      <div class="right-top-grid">
+        <!-- Actionable Suggestions card -->
+        <div class="card suggestions-card">
+          <div class="card-header">
+            <span class="card-title">Actionable Suggestions</span>
+            <button class="card-menu-btn" aria-label="More options">⋯</button>
+          </div>
+          <p class="suggestion-text" id="suggestion-text">Consider Rebalancing IT Weight</p>
+          <button class="strategy-btn" id="strategy-btn">VIEW STRATEGY</button>
+        </div>
+
+        <!-- Analysis Transparency card -->
+        <div class="card analysis-card">
+          <div class="card-header">
+            <span class="card-title">Analysis Transparency</span>
+            <button class="card-menu-btn" aria-label="More options">⋯</button>
+          </div>
+          <p class="conf-score">Confidence Score: <strong id="conf-score">85%</strong></p>
+          <p class="conf-basis" id="conf-basis">Based on: 250+ news sources and sector trends.</p>
+          <div class="mini-chart-area" aria-hidden="true">
+            <!-- decorative mini chart -->
+            <svg viewBox="0 0 120 50" width="100%" height="50" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="miniChartGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="rgba(0,212,184,0.4)"/>
+                  <stop offset="100%" stop-color="rgba(0,212,184,0)"/>
+                </linearGradient>
+              </defs>
+              <polyline id="mini-line"
+                        points="0,40 20,32 40,36 55,22 70,26 85,14 100,18 120,10"
+                        fill="none" stroke="#00d4b8" stroke-width="2" stroke-linejoin="round"/>
+              <polygon id="mini-fill"
+                       points="0,40 20,32 40,36 55,22 70,26 85,14 100,18 120,10 120,50 0,50"
+                       fill="url(#miniChartGrad)"/>
+            </svg>
+          </div>
+        </div>
+      </div><!-- /right-top-grid -->
+
+      <!-- Detailed Recommendations card -->
+      <div class="card recs-card">
+        <div class="card-header">
+          <span class="card-title">Detailed Recommendations</span>
+          <button class="card-menu-btn" aria-label="More options">⋯</button>
+        </div>
+        <div class="table-scroll">
+          <table class="recs-table" aria-label="Detailed recommendations">
+            <thead>
+              <tr>
+                <th>Ticker</th>
+                <th>Action</th>
+                <th>Reason</th>
+                <th>Current Price</th>
+                <th>Deep-dive</th>
+              </tr>
+            </thead>
+            <tbody id="recs-tbody">
+              <!-- populated by app.js -->
+            </tbody>
+          </table>
+        </div>
+        <p class="recs-empty" id="recs-empty" hidden>Upload a statement to see recommendations.</p>
+      </div>
+    </section><!-- /column-right -->
+
+  </main><!-- /dashboard -->
+
+  <footer class="footer">
+    <span>Powered by © PortfolioSense AI</span>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

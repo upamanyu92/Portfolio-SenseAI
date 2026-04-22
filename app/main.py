@@ -8,6 +8,8 @@ from arq import create_pool
 from arq.connections import RedisSettings
 from arq.jobs import Job
 from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from redis.exceptions import RedisError
 
 from app.schemas import JobStatusResponse, UploadResponse
@@ -35,6 +37,14 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="PortfolioSense AI", lifespan=lifespan)
+
+_STATIC_DIR = Path(__file__).parent / "static"
+app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
+
+
+@app.get("/", include_in_schema=False)
+async def index() -> FileResponse:
+    return FileResponse(str(_STATIC_DIR / "index.html"))
 
 
 @app.get("/health")
