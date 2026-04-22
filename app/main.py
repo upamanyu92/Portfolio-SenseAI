@@ -49,6 +49,24 @@ async def lifespan(app: FastAPI):
             await redis.close()
 
 
+async def _get_redis_or_none(app: FastAPI):
+    redis = getattr(app.state, "redis", None)
+    if redis is not None:
+        return redis
+
+    redis_url = os.getenv("REDIS_URL")
+    if not redis_url:
+        return None
+
+    try:
+        redis = await create_pool(RedisSettings.from_dsn(redis_url))
+        app.state.redis = redis
+        return redis
+    except (RedisError, OSError):
+        logger.exception("Failed to connect to Redis on demand")
+        return None
+
+
 app = FastAPI(title="PortfolioSense AI", lifespan=lifespan)
 
 _STATIC_DIR = Path(__file__).parent / "static"
@@ -95,7 +113,7 @@ async def analyze(request: Request) -> UploadResponse:
             "file_bytes": await upload.read(),
         })
 
-    redis = getattr(app.state, "redis", None)
+    redis = await _get_redis_or_none(app)
     if redis is None:
         raise HTTPException(status_code=503, detail="Queue backend unavailable")
 
@@ -110,7 +128,7 @@ async def analyze(request: Request) -> UploadResponse:
 
 @app.get("/jobs/{job_id}", response_model=JobStatusResponse)
 async def job_status(job_id: str) -> JobStatusResponse:
-    redis = getattr(app.state, "redis", None)
+    redis = await _get_redis_or_none(app)
     if redis is None:
         raise HTTPException(status_code=503, detail="Queue backend unavailable")
 
