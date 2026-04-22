@@ -3,310 +3,638 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PortfolioSense AI – Dashboard</title>
+  <title>PortfolioSense AI</title>
   <link rel="stylesheet" href="/static/style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
-  <!-- ═══════════════════ HEADER ═══════════════════ -->
-  <header class="header">
-    <div class="header-left">
-      <div class="logo">
-        <svg viewBox="0 0 36 36" width="32" height="32" aria-hidden="true">
-          <defs>
-            <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#00d4b8"/>
-              <stop offset="100%" stop-color="#1a6fd4"/>
-            </linearGradient>
-          </defs>
-          <rect width="36" height="36" rx="8" fill="url(#logoGrad)"/>
-          <polyline points="5,26 12,18 18,22 24,12 31,16"
-                    fill="none" stroke="#fff" stroke-width="2.5"
-                    stroke-linecap="round" stroke-linejoin="round"/>
-          <circle cx="12" cy="18" r="2" fill="#fff"/>
-          <circle cx="18" cy="22" r="2" fill="#fff"/>
-          <circle cx="24" cy="12" r="2" fill="#fff"/>
-        </svg>
-        <span class="logo-text">PortfolioSense <em>AI</em></span>
-      </div>
-      <div class="search-bar">
-        <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <circle cx="9" cy="9" r="6"/>
-          <line x1="14" y1="14" x2="19" y2="19"/>
-        </svg>
-        <input type="text" placeholder="Search ticker, sector…" aria-label="Search" />
-      </div>
+<!-- ═══════════ HEADER ═══════════ -->
+<header class="header">
+  <div class="header-left">
+    <div class="logo" role="button" tabindex="0" data-nav="dashboard" aria-label="Dashboard">
+      <svg viewBox="0 0 36 36" width="32" height="32" aria-hidden="true">
+        <defs><linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#00d4b8"/><stop offset="100%" stop-color="#1a6fd4"/>
+        </linearGradient></defs>
+        <rect width="36" height="36" rx="8" fill="url(#logoGrad)"/>
+        <polyline points="5,26 12,18 18,22 24,12 31,16" fill="none" stroke="#fff"
+                  stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="12" cy="18" r="2" fill="#fff"/>
+        <circle cx="18" cy="22" r="2" fill="#fff"/>
+        <circle cx="24" cy="12" r="2" fill="#fff"/>
+      </svg>
+      <span class="logo-text">PortfolioSense <em>AI</em></span>
     </div>
-    <nav class="header-nav" aria-label="Primary navigation">
-      <a href="#" class="nav-link active" aria-current="page">Dashboard</a>
-      <a href="#" class="nav-link">Markets</a>
-      <a href="#" class="nav-link">Account</a>
-      <a href="#" class="nav-link">Learn</a>
-    </nav>
-    <div class="header-right">
-      <button class="icon-btn" aria-label="Notifications">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-        </svg>
-        <span class="notif-dot" aria-hidden="true"></span>
-      </button>
-      <div class="avatar" aria-label="User account">U</div>
+    <div class="search-bar">
+      <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor"
+           stroke-width="2" aria-hidden="true">
+        <circle cx="9" cy="9" r="6"/><line x1="14" y1="14" x2="19" y2="19"/>
+      </svg>
+      <input type="text" id="global-search" placeholder="Search holdings, ticker…"
+             aria-label="Search" autocomplete="off"/>
     </div>
-  </header>
+  </div>
+  <nav class="header-nav" aria-label="Primary navigation">
+    <a href="#" class="nav-link active" data-nav="dashboard" aria-current="page">Dashboard</a>
+    <a href="#" class="nav-link" data-nav="holdings">Holdings</a>
+    <a href="#" class="nav-link" data-nav="markets">Markets</a>
+    <a href="#" class="nav-link" data-nav="account">Account</a>
+    <a href="#" class="nav-link" data-nav="learn">Learn</a>
+  </nav>
+  <div class="header-right">
+    <button class="icon-btn" aria-label="Notifications">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+           stroke-width="2" aria-hidden="true">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+      <span class="notif-dot" aria-hidden="true"></span>
+    </button>
+    <div class="avatar" role="button" tabindex="0" data-nav="account" aria-label="Account">U</div>
+  </div>
+</header>
 
-  <!-- ═══════════════════ MAIN DASHBOARD ═══════════════════ -->
-  <main class="dashboard">
+<!-- ═══════════ DASHBOARD PAGE ═══════════ -->
+<main class="page-panel dashboard" data-page="dashboard" aria-label="Dashboard">
 
-    <!-- ══════ LEFT COLUMN: Upload & History ══════ -->
-    <section class="column column-left" aria-label="File Upload">
-      <h2 class="column-title">Secure File Upload &amp; History</h2>
-
-      <!-- Upload card -->
-      <div class="upload-card" id="upload-drop-zone" role="region" aria-label="Upload your holding statement">
-        <div class="upload-card-inner">
-          <p class="upload-heading">UPLOAD YOUR<br/>HOLDING STATEMENT</p>
-          <p class="upload-sub">Privacy First. Automatically Sanitized.</p>
-
-          <!-- Funnel + lock illustration -->
-          <div class="funnel-wrap" aria-hidden="true">
-            <svg viewBox="0 0 120 140" width="100" class="funnel-svg">
-              <defs>
-                <linearGradient id="funnelGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#1a9fd4"/>
-                  <stop offset="60%" stop-color="#7c3aed"/>
-                  <stop offset="100%" stop-color="#00d4b8"/>
-                </linearGradient>
-                <filter id="funnelGlow">
-                  <feGaussianBlur stdDeviation="3" result="blur"/>
-                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                </filter>
-              </defs>
-              <!-- funnel body -->
-              <path d="M8,10 L112,10 L72,58 L72,110 L48,98 L48,58 Z"
-                    fill="url(#funnelGrad)" filter="url(#funnelGlow)" opacity="0.92"/>
-              <!-- funnel rim -->
-              <path d="M8,10 L112,10 L72,58 L48,58 Z"
-                    fill="none" stroke="rgba(0,212,184,0.5)" stroke-width="1.5"/>
-              <!-- document lines on the funnel -->
-              <line x1="40" y1="28" x2="80" y2="28" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" stroke-linecap="round"/>
-              <line x1="35" y1="38" x2="85" y2="38" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" stroke-linecap="round"/>
+  <section class="column column-left" aria-label="File Upload">
+    <h2 class="column-title">Secure File Upload &amp; History</h2>
+    <div class="upload-card" id="upload-drop-zone" role="region">
+      <div class="upload-card-inner">
+        <p class="upload-heading">UPLOAD YOUR<br/>HOLDING STATEMENT</p>
+        <p class="upload-sub">Privacy First. Automatically Sanitized.</p>
+        <div class="funnel-wrap" aria-hidden="true">
+          <svg viewBox="0 0 120 140" width="100" class="funnel-svg">
+            <defs>
+              <linearGradient id="funnelGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#1a9fd4"/>
+                <stop offset="60%" stop-color="#7c3aed"/>
+                <stop offset="100%" stop-color="#00d4b8"/>
+              </linearGradient>
+              <filter id="funnelGlow">
+                <feGaussianBlur stdDeviation="3" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <path d="M8,10 L112,10 L72,58 L72,110 L48,98 L48,58 Z"
+                  fill="url(#funnelGrad)" filter="url(#funnelGlow)" opacity="0.92"/>
+            <path d="M8,10 L112,10 L72,58 L48,58 Z"
+                  fill="none" stroke="rgba(0,212,184,0.5)" stroke-width="1.5"/>
+            <line x1="40" y1="28" x2="80" y2="28" stroke="rgba(255,255,255,0.35)"
+                  stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="35" y1="38" x2="85" y2="38" stroke="rgba(255,255,255,0.35)"
+                  stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <div class="lock-badge">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+                 stroke="#00d4b8" stroke-width="2.5" aria-hidden="true">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
-            <!-- lock badge -->
-            <div class="lock-badge">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#00d4b8" stroke-width="2.5" aria-hidden="true">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-              </svg>
-              <span>Secure</span>
-            </div>
-          </div>
-
-          <!-- file input -->
-          <label class="select-file-btn" for="file-input">
-            <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M10 3v10M5 8l5-5 5 5"/>
-              <path d="M3 14v2a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2"/>
-            </svg>
-            SELECT FILE FROM DEVICE
-          </label>
-          <input type="file" id="file-input" accept=".pdf,.xlsx,.docx,.doc" class="sr-only" aria-label="Choose a holding statement file"/>
-
-          <p class="upload-hint">Supported: .PDF, .XLSX, .DOCX, .DOC, etc.</p>
-          <div class="file-type-icons" aria-hidden="true">
-            <span class="ft-icon">PDF</span>
-            <span class="ft-icon">XLS</span>
-            <span class="ft-icon">DOC</span>
+            <span>Secure</span>
           </div>
         </div>
-      </div><!-- /upload-card -->
+        <label class="select-file-btn" for="file-input">
+          <svg viewBox="0 0 20 20" width="15" height="15" fill="none" stroke="currentColor"
+               stroke-width="2" aria-hidden="true">
+            <path d="M10 3v10M5 8l5-5 5 5"/>
+            <path d="M3 14v2a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2"/>
+          </svg>
+          SELECT FILE FROM DEVICE
+        </label>
+        <input type="file" id="file-input" accept=".pdf,.xlsx,.docx,.doc"
+               class="sr-only" aria-label="Choose a holding statement file"/>
+        <p class="upload-hint">Supported: .PDF, .XLSX, .DOCX</p>
+        <div class="file-type-icons" aria-hidden="true">
+          <span class="ft-icon">PDF</span>
+          <span class="ft-icon">XLS</span>
+          <span class="ft-icon">DOC</span>
+        </div>
+      </div>
+    </div>
+    <div class="recent-activity">
+      <h3 class="section-subtitle">Recent Activity</h3>
+      <ul class="activity-list" id="activity-list" aria-label="Recent upload history"></ul>
+      <p class="activity-empty" id="activity-empty">No recent uploads</p>
+    </div>
+  </section>
 
-      <!-- Recent Activity -->
-      <div class="recent-activity">
-        <h3 class="section-subtitle">Recent Activity</h3>
-        <ul class="activity-list" id="activity-list" aria-label="Recent upload history">
-          <!-- populated by app.js -->
+  <section class="column column-middle" aria-label="Portfolio Report">
+    <h2 class="column-title">Portfolio Health &amp; Allocation Snapshot</h2>
+    <div class="portfolio-header">
+      <h1 class="report-title">YOUR PORTFOLIO REPORT</h1>
+      <p class="report-sub">Last Analyzed: <span id="last-analyzed">&#8211;</span></p>
+    </div>
+    <div class="middle-grid">
+      <div class="card health-card">
+        <div class="card-header">
+          <span class="card-title">Portfolio Health Score</span>
+          <button class="card-menu-btn" aria-label="More options">&#8943;</button>
+        </div>
+        <div class="gauge-wrap">
+          <svg viewBox="0 0 200 160" class="gauge-svg" role="img" aria-label="Health gauge">
+            <defs>
+              <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#7c3aed"/>
+                <stop offset="50%" stop-color="#1a9fd4"/>
+                <stop offset="100%" stop-color="#00d4b8"/>
+              </linearGradient>
+              <filter id="gaugeGlow">
+                <feGaussianBlur stdDeviation="4" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+            <circle cx="100" cy="100" r="66" fill="none" stroke="#1a2a4a" stroke-width="12"
+                    stroke-dasharray="311.02 103.67" transform="rotate(135 100 100)"/>
+            <circle cx="100" cy="100" r="66" id="gauge-progress" fill="none"
+                    stroke="url(#gaugeGrad)" stroke-width="12" stroke-linecap="round"
+                    stroke-dasharray="242.60 172.09" transform="rotate(135 100 100)"
+                    filter="url(#gaugeGlow)"/>
+            <text x="100" y="96" text-anchor="middle" fill="white" font-size="40"
+                  font-weight="700" id="gauge-score">78</text>
+            <text x="100" y="115" text-anchor="middle" fill="#5a7a9a" font-size="13"
+                  id="gauge-fraction">78 / 100</text>
+          </svg>
+          <p class="gauge-status optimized" id="gauge-status">OPTIMIZED</p>
+        </div>
+      </div>
+      <div class="card alloc-card">
+        <div class="card-header">
+          <span class="card-title">Asset Allocation</span>
+          <button class="card-menu-btn" aria-label="More options">&#8943;</button>
+        </div>
+        <div class="donut-wrap">
+          <canvas id="assetAllocChart" width="140" height="140"
+                  role="img" aria-label="Asset allocation donut"></canvas>
+        </div>
+        <ul class="donut-legend" id="alloc-legend" aria-label="Asset allocation legend">
+          <li><span class="legend-dot" style="background:#00d4b8"></span>IT: 25%</li>
+          <li><span class="legend-dot" style="background:#1a9fd4"></span>Pharma: 18%</li>
+          <li><span class="legend-dot" style="background:#5a6a9a"></span>Energy: 15%</li>
+          <li><span class="legend-dot" style="background:#2a3a6a"></span>Others: 42%</li>
         </ul>
-        <p class="activity-empty" id="activity-empty">No recent uploads</p>
       </div>
-    </section><!-- /column-left -->
-
-    <!-- ══════ MIDDLE COLUMN: Portfolio Report ══════ -->
-    <section class="column column-middle" aria-label="Portfolio Report">
-      <h2 class="column-title">Portfolio Health &amp; Allocation Snapshot</h2>
-
-      <div class="portfolio-header">
-        <h1 class="report-title">YOUR PORTFOLIO REPORT</h1>
-        <p class="report-sub">Last Analyzed: <span id="last-analyzed">–</span></p>
+      <div class="card transparency-donut-card">
+        <div class="card-header">
+          <span class="card-title">Asset Transparency</span>
+          <button class="card-menu-btn" aria-label="More options">&#8943;</button>
+        </div>
+        <div class="donut-wrap">
+          <canvas id="assetTransChart" width="140" height="140"
+                  role="img" aria-label="Asset transparency donut"></canvas>
+        </div>
       </div>
-
-      <div class="middle-grid">
-        <!-- Health Score card -->
-        <div class="card health-card">
-          <div class="card-header">
-            <span class="card-title">Portfolio Health Score</span>
-            <button class="card-menu-btn" aria-label="More options">⋯</button>
-          </div>
-          <div class="gauge-wrap">
-            <svg viewBox="0 0 200 160" class="gauge-svg" aria-label="Health score gauge" role="img">
-              <defs>
-                <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stop-color="#7c3aed"/>
-                  <stop offset="50%" stop-color="#1a9fd4"/>
-                  <stop offset="100%" stop-color="#00d4b8"/>
-                </linearGradient>
-                <filter id="gaugeGlow">
-                  <feGaussianBlur stdDeviation="4" result="blur"/>
-                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                </filter>
-              </defs>
-              <!-- background track (270°) -->
-              <circle cx="100" cy="100" r="66"
-                      fill="none" stroke="#1a2a4a" stroke-width="12"
-                      stroke-dasharray="311.02 103.67"
-                      transform="rotate(135 100 100)"/>
-              <!-- progress arc -->
-              <circle cx="100" cy="100" r="66"
-                      id="gauge-progress"
-                      fill="none" stroke="url(#gaugeGrad)" stroke-width="12"
-                      stroke-linecap="round"
-                      stroke-dasharray="242.60 172.09"
-                      transform="rotate(135 100 100)"
-                      filter="url(#gaugeGlow)"/>
-              <!-- score text -->
-              <text x="100" y="96" text-anchor="middle"
-                    fill="white" font-size="40" font-weight="700"
-                    id="gauge-score">78</text>
-              <text x="100" y="115" text-anchor="middle"
-                    fill="#5a7a9a" font-size="13"
-                    id="gauge-fraction">78 / 100</text>
-            </svg>
-            <p class="gauge-status optimized" id="gauge-status">OPTIMIZED</p>
-          </div>
+      <div class="card pulse-card">
+        <div class="card-header">
+          <span class="card-title">AI Investment Pulse</span>
+          <button class="card-menu-btn" aria-label="More options">&#8943;</button>
         </div>
-
-        <!-- Asset Allocation card -->
-        <div class="card alloc-card">
-          <div class="card-header">
-            <span class="card-title">Asset Allocation</span>
-            <button class="card-menu-btn" aria-label="More options">⋯</button>
-          </div>
-          <div class="donut-wrap">
-            <canvas id="assetAllocChart" width="140" height="140" aria-label="Asset allocation donut chart" role="img"></canvas>
-          </div>
-          <ul class="donut-legend" id="alloc-legend" aria-label="Asset allocation legend">
-            <li><span class="legend-dot" style="background:#00d4b8"></span>IT: 25%</li>
-            <li><span class="legend-dot" style="background:#1a9fd4"></span>Pharma: 18%</li>
-            <li><span class="legend-dot" style="background:#5a6a9a"></span>Energy: 15%</li>
-            <li><span class="legend-dot" style="background:#2a3a6a"></span>Others: 42%</li>
-          </ul>
+        <div class="bar-wrap">
+          <canvas id="pulseChart" width="200" height="130"
+                  role="img" aria-label="AI investment pulse bar chart"></canvas>
         </div>
-
-        <!-- Asset Transparency card -->
-        <div class="card transparency-donut-card">
-          <div class="card-header">
-            <span class="card-title">Asset Transparency</span>
-            <button class="card-menu-btn" aria-label="More options">⋯</button>
-          </div>
-          <div class="donut-wrap">
-            <canvas id="assetTransChart" width="140" height="140" aria-label="Asset transparency donut chart" role="img"></canvas>
-          </div>
+        <div class="pulse-labels">
+          <span class="pulse-label bullish" id="lbl-bullish">Bullish: 60%</span>
+          <span class="pulse-label neutral"  id="lbl-neutral">Neutral: 30%</span>
+          <span class="pulse-label bearish"  id="lbl-bearish">Bearish: 10%</span>
         </div>
-
-        <!-- AI Investment Pulse card -->
-        <div class="card pulse-card">
-          <div class="card-header">
-            <span class="card-title">AI Investment Pulse</span>
-            <button class="card-menu-btn" aria-label="More options">⋯</button>
-          </div>
-          <div class="bar-wrap">
-            <canvas id="pulseChart" width="200" height="130" aria-label="AI investment pulse bar chart" role="img"></canvas>
-          </div>
-          <div class="pulse-labels">
-            <span class="pulse-label bullish" id="lbl-bullish">Bullish: 60%</span>
-            <span class="pulse-label neutral" id="lbl-neutral">Neutral: 30%</span>
-            <span class="pulse-label bearish" id="lbl-bearish">Bearish: 10%</span>
-          </div>
-        </div>
-      </div><!-- /middle-grid -->
-    </section><!-- /column-middle -->
-
-    <!-- ══════ RIGHT COLUMN: Insights & Trade Signals ══════ -->
-    <section class="column column-right" aria-label="Trade Signals">
-      <h2 class="column-title">Detailed Insights &amp; Trade Signals</h2>
-
-      <div class="right-top-grid">
-        <!-- Actionable Suggestions card -->
-        <div class="card suggestions-card">
+      </div>
+    </div>
+    <h2 class="column-title insights-title">Detailed Insights &amp; Trade Signals</h2>
+    <div class="right-top-grid">
+      <div class="card suggestions-card">
           <div class="card-header">
             <span class="card-title">Actionable Suggestions</span>
-            <button class="card-menu-btn" aria-label="More options">⋯</button>
+            <button class="card-menu-btn" aria-label="More options">&#8943;</button>
           </div>
+          <p class="portfolio-diagnosis" id="portfolio-diagnosis" hidden></p>
           <p class="suggestion-text" id="suggestion-text">Consider Rebalancing IT Weight</p>
-          <button class="strategy-btn" id="strategy-btn">VIEW STRATEGY</button>
+          <button class="strategy-btn" id="strategy-btn">ANALYZE &amp; SUGGEST</button>
         </div>
-
-        <!-- Analysis Transparency card -->
-        <div class="card analysis-card">
+      <div class="card analysis-card">
           <div class="card-header">
             <span class="card-title">Analysis Transparency</span>
-            <button class="card-menu-btn" aria-label="More options">⋯</button>
+            <button class="card-menu-btn" aria-label="More options">&#8943;</button>
           </div>
           <p class="conf-score">Confidence Score: <strong id="conf-score">85%</strong></p>
-          <p class="conf-basis" id="conf-basis">Based on: 250+ news sources and sector trends.</p>
-          <div class="mini-chart-area" aria-hidden="true">
-            <!-- decorative mini chart -->
-            <svg viewBox="0 0 120 50" width="100%" height="50" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="miniChartGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="rgba(0,212,184,0.4)"/>
-                  <stop offset="100%" stop-color="rgba(0,212,184,0)"/>
-                </linearGradient>
-              </defs>
-              <polyline id="mini-line"
-                        points="0,40 20,32 40,36 55,22 70,26 85,14 100,18 120,10"
-                        fill="none" stroke="#00d4b8" stroke-width="2" stroke-linejoin="round"/>
-              <polygon id="mini-fill"
-                       points="0,40 20,32 40,36 55,22 70,26 85,14 100,18 120,10 120,50 0,50"
-                       fill="url(#miniChartGrad)"/>
-            </svg>
+          <div class="logic-breakdown-wrap" id="logic-breakdown-wrap">
+            <p class="logic-breakdown-text" id="logic-breakdown-text">Based on: 250+ news sources and sector trends.</p>
           </div>
+          <ul class="verifier-list" id="verifier-list"></ul>
         </div>
-      </div><!-- /right-top-grid -->
-
-      <!-- Detailed Recommendations card -->
+    </div>
+    <div class="card holdings-card">
+        <div class="card-header">
+          <span class="card-title">Current Holdings</span>
+          <button class="card-menu-btn view-all-btn" data-nav="holdings">View All &#8594;</button>
+        </div>
+        <div class="table-scroll">
+          <table class="holdings-table" aria-label="Current portfolio holdings">
+            <thead>
+              <tr><th>Name</th><th>Type</th><th>Qty/Units</th><th>Current Value</th><th>Invested</th></tr>
+            </thead>
+            <tbody id="holdings-tbody"></tbody>
+          </table>
+        </div>
+        <p class="holdings-empty" id="holdings-empty" hidden>Upload a statement to view holdings.</p>
+      </div>
+      <div class="card risk-flags-card" id="risk-flags-card" hidden>
+        <div class="card-header">
+          <span class="card-title">&#9888;&#65039; Portfolio Risk Flags</span>
+        </div>
+        <ul class="risk-flags-list" id="risk-flags-list"></ul>
+      </div>
       <div class="card recs-card">
         <div class="card-header">
           <span class="card-title">Detailed Recommendations</span>
-          <button class="card-menu-btn" aria-label="More options">⋯</button>
+          <button class="card-menu-btn" aria-label="More options">&#8943;</button>
         </div>
         <div class="table-scroll">
           <table class="recs-table" aria-label="Detailed recommendations">
             <thead>
-              <tr>
-                <th>Ticker</th>
-                <th>Action</th>
-                <th>Reason</th>
-                <th>Current Price</th>
-                <th>Deep-dive</th>
-              </tr>
+              <tr><th>Ticker</th><th>Action</th><th>Priority</th><th>Reason</th></tr>
             </thead>
-            <tbody id="recs-tbody">
-              <!-- populated by app.js -->
-            </tbody>
+            <tbody id="recs-tbody"></tbody>
           </table>
         </div>
         <p class="recs-empty" id="recs-empty" hidden>Upload a statement to see recommendations.</p>
       </div>
-    </section><!-- /column-right -->
+  </section>
 
-  </main><!-- /dashboard -->
+</main>
 
-  <footer class="footer">
-    <span>Powered by © PortfolioSense AI</span>
-  </footer>
+<!-- ═══════════ HOLDINGS PAGE ═══════════ -->
+<main class="page-panel holdings-page" data-page="holdings" aria-label="Holdings" hidden>
+  <div class="page-content">
+    <div class="page-topbar">
+      <div>
+        <h1 class="page-title">Current Holdings</h1>
+        <p class="page-subtitle">All positions parsed from your uploaded statement</p>
+      </div>
+      <label class="select-file-btn select-file-btn--sm" for="file-input-h">
+        <svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor"
+             stroke-width="2" aria-hidden="true">
+          <path d="M10 3v10M5 8l5-5 5 5"/>
+          <path d="M3 14v2a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2"/>
+        </svg>
+        Upload New Statement
+      </label>
+      <input type="file" id="file-input-h" accept=".pdf,.xlsx,.docx,.doc"
+             class="sr-only" aria-label="Upload new statement"/>
+    </div>
 
-  <script src="/static/app.js"></script>
+    <div class="holdings-summary-bar">
+      <div class="summary-stat">
+        <span class="summary-label">Total Invested</span>
+        <span class="summary-value" id="h-total-invested">&#8211;</span>
+      </div>
+      <div class="summary-stat">
+        <span class="summary-label">Current Value</span>
+        <span class="summary-value" id="h-current-value">&#8211;</span>
+      </div>
+      <div class="summary-stat">
+        <span class="summary-label">Overall P&amp;L</span>
+        <span class="summary-value" id="h-pnl">&#8211;</span>
+      </div>
+      <div class="summary-stat">
+        <span class="summary-label">Holdings</span>
+        <span class="summary-value" id="h-count">&#8211;</span>
+      </div>
+      <div class="summary-stat">
+        <span class="summary-label">Stocks</span>
+        <span class="summary-value" id="h-stocks-count">&#8211;</span>
+      </div>
+      <div class="summary-stat">
+        <span class="summary-label">Mutual Funds</span>
+        <span class="summary-value" id="h-mf-count">&#8211;</span>
+      </div>
+    </div>
+
+    <div class="holdings-controls">
+      <div class="filter-tabs" role="tablist">
+        <button class="filter-tab active" data-filter="all" role="tab" aria-selected="true">All</button>
+        <button class="filter-tab" data-filter="stock" role="tab" aria-selected="false">Stocks</button>
+        <button class="filter-tab" data-filter="mutual_fund" role="tab" aria-selected="false">Mutual Funds</button>
+      </div>
+      <div class="holdings-search-bar">
+        <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor"
+             stroke-width="2" aria-hidden="true">
+          <circle cx="9" cy="9" r="6"/>
+          <line x1="14" y1="14" x2="19" y2="19"/>
+        </svg>
+        <input type="text" id="holdings-search"
+               placeholder="Search name, ISIN, category&#8230;"
+               aria-label="Search holdings" autocomplete="off"/>
+      </div>
+      <div class="sort-controls">
+        <label class="sort-label" for="holdings-sort">Sort:</label>
+        <select id="holdings-sort" class="sort-select">
+          <option value="name">Name A&#8211;Z</option>
+          <option value="current_value_desc">Current Value &#8595;</option>
+          <option value="current_value_asc">Current Value &#8593;</option>
+          <option value="pnl_desc">P&amp;L &#8595;</option>
+          <option value="pnl_asc">P&amp;L &#8593;</option>
+          <option value="pnl_pct_desc">P&amp;L % &#8595;</option>
+          <option value="quantity_desc">Qty &#8595;</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card holdings-full-card">
+      <div class="table-scroll">
+        <table class="holdings-full-table" id="holdings-full-table" aria-label="Full holdings">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Category</th>
+              <th>ISIN</th>
+              <th class="num-col">Qty / Units</th>
+              <th class="num-col">Invested (&#8377;)</th>
+              <th class="num-col">Current (&#8377;)</th>
+              <th class="num-col">P&amp;L (&#8377;)</th>
+              <th class="num-col">P&amp;L %</th>
+              <th>Source</th>
+            </tr>
+          </thead>
+          <tbody id="holdings-full-tbody"></tbody>
+        </table>
+      </div>
+      <p class="holdings-empty holdings-full-empty" id="holdings-full-empty">
+        Upload a portfolio statement from the Dashboard to see your holdings here.
+      </p>
+    </div>
+  </div>
+</main>
+
+<!-- ═══════════ MARKETS PAGE ═══════════ -->
+<main class="page-panel markets-page" data-page="markets" aria-label="Markets" hidden>
+  <div class="page-content">
+    <div class="page-topbar">
+      <div>
+        <h1 class="page-title">Markets Overview</h1>
+        <p class="page-subtitle">Key indices, sector performance &amp; movers</p>
+      </div>
+      <span class="illustrative-badge">&#9888; Illustrative Data</span>
+    </div>
+    <div class="indices-strip" id="indices-strip"></div>
+    <div class="markets-grid">
+      <div class="card sector-card">
+        <div class="card-header"><span class="card-title">Sector Performance (YTD %)</span></div>
+        <canvas id="sectorChart" width="420" height="240"
+                role="img" aria-label="Sector performance chart"></canvas>
+      </div>
+      <div class="card movers-card">
+        <div class="card-header"><span class="card-title">Top Gainers</span></div>
+        <table class="movers-table" aria-label="Top gainers">
+          <thead><tr><th>Stock</th><th>Price</th><th>Chg%</th></tr></thead>
+          <tbody id="gainers-tbody"></tbody>
+        </table>
+      </div>
+      <div class="card movers-card">
+        <div class="card-header"><span class="card-title">Top Losers</span></div>
+        <table class="movers-table" aria-label="Top losers">
+          <thead><tr><th>Stock</th><th>Price</th><th>Chg%</th></tr></thead>
+          <tbody id="losers-tbody"></tbody>
+        </table>
+      </div>
+      <div class="card fii-card">
+        <div class="card-header">
+          <span class="card-title">FII / DII Activity (&#8377; Cr)</span>
+        </div>
+        <canvas id="fiiChart" width="340" height="200"
+                role="img" aria-label="FII DII activity chart"></canvas>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ═══════════ ACCOUNT PAGE ═══════════ -->
+<main class="page-panel account-page" data-page="account" aria-label="Account" hidden>
+  <div class="page-content">
+    <div class="page-topbar">
+      <div>
+        <h1 class="page-title">My Account</h1>
+        <p class="page-subtitle">Profile, portfolio summary &amp; statement history</p>
+      </div>
+    </div>
+    <div class="account-grid">
+      <div class="card profile-card">
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar">U</div>
+          <div>
+            <div class="profile-name" id="acc-name">Upamanyu Samal</div>
+            <div class="profile-role">Retail Investor</div>
+          </div>
+        </div>
+        <div class="profile-stats">
+          <div class="profile-stat">
+            <span class="ps-label">Statements Analyzed</span>
+            <span class="ps-val" id="acc-stmt-count">0</span>
+          </div>
+          <div class="profile-stat">
+            <span class="ps-label">Holdings Tracked</span>
+            <span class="ps-val" id="acc-holdings-count">0</span>
+          </div>
+          <div class="profile-stat">
+            <span class="ps-label">Last Upload</span>
+            <span class="ps-val" id="acc-last-upload">&#8211;</span>
+          </div>
+        </div>
+      </div>
+      <div class="card port-summary-card">
+        <div class="card-header"><span class="card-title">Portfolio Summary</span></div>
+        <div class="port-summary-grid">
+          <div class="psrow"><span class="psk">Total Invested</span><span class="psv" id="acc-invested">&#8211;</span></div>
+          <div class="psrow"><span class="psk">Current Value</span><span class="psv" id="acc-current">&#8211;</span></div>
+          <div class="psrow"><span class="psk">Overall P&amp;L</span><span class="psv" id="acc-pnl">&#8211;</span></div>
+          <div class="psrow"><span class="psk">Stocks</span><span class="psv" id="acc-stocks">&#8211;</span></div>
+          <div class="psrow"><span class="psk">Mutual Funds</span><span class="psv" id="acc-mf">&#8211;</span></div>
+          <div class="psrow"><span class="psk">AI Provider</span><span class="psv" id="acc-provider">&#8211;</span></div>
+        </div>
+      </div>
+      <div class="card history-card">
+        <div class="card-header"><span class="card-title">Statement History</span></div>
+        <ul class="stmt-history-list" id="stmt-history-list"></ul>
+        <p class="stmt-history-empty" id="stmt-history-empty">No statements uploaded yet.</p>
+      </div>
+      <div class="card privacy-card">
+        <div class="card-header"><span class="card-title">Data &amp; Privacy</span></div>
+        <ul class="privacy-list">
+          <li>
+            <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#00d4b8"
+                 stroke-width="2" aria-hidden="true">
+              <path d="M10 2L3 6v5c0 4.418 3.134 8.295 7 9 3.866-.705 7-4.582 7-9V6L10 2z"/>
+            </svg>
+            PAN &amp; phone numbers are <strong>redacted</strong> before any AI processing.
+          </li>
+          <li>
+            <h2 class="column-title">Detailed Insights &amp; Trade Signals</h2>
+            </svg>
+            Files are processed <strong>in-memory</strong> and never stored on disk.
+          </li>
+          <li>
+            <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#00d4b8"
+                 stroke-width="2" aria-hidden="true">
+              <rect x="2" y="5" width="16" height="12" rx="2"/>
+              <path d="M6 5V4a4 4 0 0 1 8 0v1"/>
+            </svg>
+            Encrypted in transit; jobs expire automatically from the queue.
+          </li>
+          <li>
+            <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#00d4b8"
+                 stroke-width="2" aria-hidden="true">
+              <path d="M4 4h12v12H4zM8 9h4M10 7v4"/>
+            </svg>
+            No personal data is shared with third-party advertisers.
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ═══════════ LEARN PAGE ═══════════ -->
+<main class="page-panel learn-page" data-page="learn" aria-label="Learn" hidden>
+  <div class="page-content">
+    <div class="page-topbar">
+      <div>
+        <h1 class="page-title">Learn Investing</h1>
+        <p class="page-subtitle">Concepts, strategies &amp; glossary for every investor</p>
+      </div>
+    </div>
+    <div class="learn-grid">
+
+      <div class="card personalized-learn-banner" id="personalized-learn-banner" hidden>
+        <div class="card-header">
+          <span class="card-title">&#128204; Personalized for Your Portfolio</span>
+        </div>
+        <p class="plearn-subtitle" id="plearn-subtitle"></p>
+        <div class="plearn-chips" id="plearn-chips"></div>
+      </div>
+
+      <article class="card learn-card" data-topic="sip">
+        <div class="learn-icon">&#128200;</div>
+        <h3 class="learn-title">What is SIP?</h3>
+        <p class="learn-summary">Systematic Investment Plan lets you invest fixed amounts at regular intervals, averaging your purchase cost over time.</p>
+        <button class="learn-toggle" aria-expanded="false">Learn more &#8595;</button>
+        <div class="learn-body" hidden>
+          <p>A <strong>Systematic Investment Plan (SIP)</strong> is a disciplined method. Instead of a lump sum, you invest a fixed amount monthly in a mutual fund scheme.</p>
+          <ul>
+            <li><strong>Rupee-cost averaging:</strong> Buy more units when prices are low.</li>
+            <li><strong>Compounding:</strong> Returns reinvested, growing corpus over time.</li>
+            <li><strong>Disciplines saving:</strong> Auto-debit ensures consistency.</li>
+          </ul>
+          <p class="learn-example">&#8377;5,000/month at 12% CAGR for 10 years &#8594; &#8377;11.6 lakh corpus.</p>
+        </div>
+      </article>
+
+      <article class="card learn-card" data-topic="diversification">
+        <p class="learn-summary">Spreading investments across asset classes reduces total risk without proportionally reducing returns.</p>
+        <button class="learn-toggle" aria-expanded="false">Learn more &#8595;</button>
+        <div class="learn-body" hidden>
+          <p><strong>Diversification</strong> allocates investments among various instruments to minimise single-asset exposure.</p>
+          <ul>
+            <li><strong>Cross-asset:</strong> Mix equity, debt, gold &amp; REITs.</li>
+            <li><strong>Cross-sector:</strong> Avoid concentration in only IT or PSU.</li>
+            <li><strong>Cross-cap:</strong> Balance large-cap stability with mid/small-cap growth.</li>
+          </ul>
+          <p class="learn-example">A pure IT portfolio carries 2&#215; the volatility of a diversified one.</p>
+        </div>
+      </article>
+
+      <article class="card learn-card" data-topic="elss">
+        <p class="learn-summary">Equity Linked Saving Schemes offer tax deductions under Section 80C with the shortest lock-in of 3 years.</p>
+        <button class="learn-toggle" aria-expanded="false">Learn more &#8595;</button>
+        <div class="learn-body" hidden>
+          <p><strong>ELSS</strong> funds invest &#8805;80% in equities and qualify for &#8377;1.5 lakh deduction under Sec 80C.</p>
+          <ul>
+            <li><strong>Lock-in:</strong> 3 years &#8212; shortest among 80C instruments.</li>
+            <li><strong>Returns:</strong> Market-linked; historically 12&#8211;16% CAGR long-term.</li>
+            <li><strong>LTCG:</strong> Gains above &#8377;1 lakh taxed at 10% after lock-in.</li>
+          </ul>
+          <p class="learn-example">On &#8377;1.5 lakh invested, save up to &#8377;46,800 tax (30% bracket).</p>
+        </div>
+      </article>
+
+      <article class="card learn-card" data-topic="pnl">
+        <p class="learn-summary">Realised vs unrealised P&amp;L, XIRR, and how to interpret your portfolio&#8217;s performance metrics.</p>
+        <button class="learn-toggle" aria-expanded="false">Learn more &#8595;</button>
+        <div class="learn-body" hidden>
+          <ul>
+            <li><strong>Unrealised P&amp;L:</strong> Paper gains/losses on positions you still hold. Fluctuates daily.</li>
+            <li><strong>Realised P&amp;L:</strong> Locked-in gains after you sell. Taxable event.</li>
+            <li><strong>Absolute Return:</strong> (Current&#8722;Invested) / Invested &#215; 100</li>
+            <li><strong>XIRR:</strong> Annualised return accounting for cash-flow timing &#8212; more accurate for SIPs.</li>
+          </ul>
+          <p class="learn-example">XIRR of 12% means your money grew at 12% p.a. compounded.</p>
+        </div>
+      </article>
+
+      <article class="card learn-card" data-topic="etf">
+        <p class="learn-summary">Both hold a basket of assets, but ETFs trade live on exchanges while mutual funds are priced at end-of-day NAV.</p>
+        <button class="learn-toggle" aria-expanded="false">Learn more &#8595;</button>
+        <div class="learn-body" hidden>
+          <table class="compare-table">
+            <thead><tr><th>Feature</th><th>ETF</th><th>Mutual Fund</th></tr></thead>
+            <tbody>
+              <tr><td>Trading</td><td>Live on exchange</td><td>End-of-day NAV</td></tr>
+              <tr><td>Expense Ratio</td><td>0.05&#8211;0.5%</td><td>0.5&#8211;2%</td></tr>
+              <tr><td>Min Investment</td><td>1 unit</td><td>&#8377;500 SIP</td></tr>
+              <tr><td>Liquidity</td><td>Intraday</td><td>T+1 to T+3</td></tr>
+              <tr><td>SIP available</td><td>&#10007;</td><td>&#10003;</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="card learn-card" data-topic="rebalancing">
+        <p class="learn-summary">Regularly realigning asset weights to target allocation keeps your risk profile intact as markets move.</p>
+        <button class="learn-toggle" aria-expanded="false">Learn more &#8595;</button>
+        <div class="learn-body" hidden>
+          <ul>
+            <li><strong>Time-based:</strong> Rebalance quarterly or annually.</li>
+            <li><strong>Threshold-based:</strong> Rebalance when any asset drifts &gt;5% from target.</li>
+            <li><strong>Tax-smart:</strong> Use new inflows first to avoid capital gains triggers.</li>
+          </ul>
+          <p class="learn-example">Equity grows 60% &#8594; 75%? Sell some to restore your 60/40 split.</p>
+        </div>
+      </article>
+
+      <article class="card learn-card" data-topic="psu">
+        <p class="learn-summary">Public Sector Undertakings offer dividend income and policy-driven growth, backed by government ownership.</p>
+        <button class="learn-toggle" aria-expanded="false">Learn more &#8595;</button>
+        <div class="learn-body" hidden>
+          <ul>
+            <li><strong>Dividend yield:</strong> PSUs often pay higher dividends due to policy mandates.</li>
+            <li><strong>Policy tailwinds:</strong> Infrastructure thrust can drive strong sector rallies.</li>
+            <li><strong>Risks:</strong> Slower decision-making; subject to potential divestment.</li>
+            <li><strong>Examples:</strong> NTPC, NHPC, NALCO, SBI, BEL, ONGC.</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="card learn-card" data-topic="gold">
+        <p class="learn-summary">Gold ETFs and Sovereign Gold Bonds provide inflation hedge and portfolio insurance with tax advantages.</p>
+        <button class="learn-toggle" aria-expanded="false">Learn more &#8595;</button>
+        <div class="learn-body" hidden>
+          <ul>
+            <li><strong>Gold ETF:</strong> Backed by physical gold; expense ratio ~0.5%.</li>
+            <li><strong>Gold FoF:</strong> Fund of funds investing into Gold ETFs &#8212; allows SIP.</li>
+            <li><strong>SGB:</strong> RBI-issued bonds with 2.5% annual interest + price appreciation. Tax-free on maturity.</li>
+            <li><strong>Recommended:</strong> 5&#8211;15% of portfolio for hedging inflation and equity volatility.</li>
+          </ul>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</main>
+
+<footer class="footer"><span>Powered by &#169; PortfolioSense AI</span></footer>
+
+<script src="/static/app.js"></script>
 </body>
 </html>

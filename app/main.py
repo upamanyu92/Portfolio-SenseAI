@@ -4,6 +4,19 @@ import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+# Load .env.local first (local Ollama / dev overrides), then .env
+for _env_file in (".env.local", ".env"):
+    _p = Path(__file__).parent.parent / _env_file
+    if _p.exists():
+        for _line in _p.read_text().splitlines():
+            _line = _line.strip()
+            if not _line or _line.startswith("#"):
+                continue
+            if "=" in _line:
+                _k, _, _v = _line.partition("=")
+                os.environ.setdefault(_k.strip(), _v.strip())
+        break  # first file found wins
+
 from arq import create_pool
 from arq.connections import RedisSettings
 from arq.jobs import Job
