@@ -20,7 +20,7 @@ for _env_file in (".env.local", ".env"):
 from arq import create_pool
 from arq.connections import RedisSettings
 from arq.jobs import Job
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from redis.exceptions import RedisError
@@ -66,18 +66,46 @@ async def health() -> dict:
 
 
 @app.post("/analyze", response_model=UploadResponse)
-async def analyze(file: UploadFile = File(...)) -> UploadResponse:
-    extension = Path(file.filename or "").suffix.lower()
-    if extension not in ALLOWED_EXTENSIONS:
-        raise HTTPException(status_code=400, detail="Unsupported file type")
+async def analyze(request: Request) -> UploadResponse:
+    form = await request.form()
+    selected_files: list[UploadFile] = []
+
+    def _is_upload_file(value: object) -> bool:
+        return hasattr(value, "filename") and hasattr(value, "read")
+
+    for upload in form.getlist("files"):
+        if _is_upload_file(upload):
+            selected_files.append(upload)  # type: ignore[arg-type]
+
+    # Backward compatible single-file form field.
+    legacy_upload = form.get("file")
+    if _is_upload_file(legacy_upload):
+        selected_files.append(legacy_upload)  # type: ignore[arg-type]
+
+    if not selected_files:
+        raise HTTPException(status_code=400, detail="No files uploaded")
+
+    payload: list[dict[str, object]] = []
+    for upload in selected_files:
+        extension = Path(upload.filename or "").suffix.lower()
+        if extension not in ALLOWED_EXTENSIONS:
+            raise HTTPException(status_code=400, detail="Unsupported file type")
+        payload.append({
+            "filename": upload.filename,
+            "file_bytes": await upload.read(),
+        })
 
     redis = getattr(app.state, "redis", None)
     if redis is None:
         raise HTTPException(status_code=503, detail="Queue backend unavailable")
 
-    file_bytes = await file.read()
-    job = await redis.enqueue_job("process_holding_statement", file_bytes, file.filename)
-    return UploadResponse(job_id=job.job_id, status="queued")
+    job = await redis.enqueue_job("process_holding_statement", payload)
+    return UploadResponse(
+        job_id=job.job_id,
+        status="queued",
+        file_count=len(payload),
+        filenames=[str(item["filename"] or "") for item in payload],
+    )
 
 
 @app.get("/jobs/{job_id}", response_model=JobStatusResponse)

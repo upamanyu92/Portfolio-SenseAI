@@ -83,7 +83,7 @@ function initRouter() {
 let allocChart = null;
 let transChart = null;
 let pulseChart = null;
-let lastUploadedFile = null;
+let lastUploadedFiles = [];
 
 function chartDefaults() {
   Chart.defaults.color       = "#6e8da8";
@@ -956,15 +956,19 @@ function renderCurrentPage() {
    15. FILE UPLOAD
 ═══════════════════════════════════════════════ */
 
-async function uploadFile(file) {
-  if (!file) return;
-  lastUploadedFile = file;
+async function uploadFiles(files) {
+  const batch = (files || []).filter(Boolean);
+  if (batch.length === 0) return;
+  lastUploadedFiles = batch;
 
-  const actId    = addActivity(file.name, "queued");
+  const label = batch.length === 1
+    ? batch[0].name
+    : `Batch (${batch.length} files): ${batch.map(f => f.name).join(", ")}`;
+  const actId    = addActivity(label, "queued");
   showProgress("Uploading…");
 
   const formData = new FormData();
-  formData.append("file", file);
+  batch.forEach(file => formData.append("files", file));
 
   try {
     const res  = await fetch("/analyze", { method:"POST", body:formData });
@@ -991,7 +995,7 @@ function hookFileInput(id) {
   const el = document.getElementById(id);
   if (!el) return;
   el.addEventListener("change", () => {
-    if (el.files?.[0]) { uploadFile(el.files[0]); el.value = ""; }
+    if (el.files?.length) { uploadFiles(Array.from(el.files)); el.value = ""; }
   });
 }
 
@@ -999,8 +1003,8 @@ function initAnalyzeBtn() {
   const btn = document.getElementById("strategy-btn");
   if (!btn) return;
   btn.addEventListener("click", () => {
-    if (!lastUploadedFile) { alert("Upload a portfolio statement first."); return; }
-    uploadFile(lastUploadedFile);
+    if (!lastUploadedFiles.length) { alert("Upload at least one portfolio statement first."); return; }
+    uploadFiles(lastUploadedFiles);
   });
 }
 
@@ -1056,8 +1060,8 @@ function initDragDrop() {
   zone.addEventListener("drop", e => {
     e.preventDefault();
     zone.classList.remove("drag-over");
-    const file = e.dataTransfer?.files?.[0];
-    if (file) uploadFile(file);
+    const files = Array.from(e.dataTransfer?.files || []);
+    if (files.length) uploadFiles(files);
   });
   zone.addEventListener("click", e => {
     if (e.target.closest(".select-file-btn") || e.target.id === "file-input") return;

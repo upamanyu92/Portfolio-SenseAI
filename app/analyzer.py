@@ -125,7 +125,91 @@ def _extract_ollama_text(data: Any) -> str | None:
     return None
 
 
-async def get_portfolio_analysis(sanitized_text: str) -> Dict[str, Any]:
+def _compact_text_for_prompt(text: str, max_chars: int = 3500) -> str:
+    """Deduplicate noisy extracted lines before sending to the LLM."""
+    lines = [ln.strip() for ln in (text or "").splitlines() if ln.strip()]
+    seen: set[str] = set()
+    unique_lines: list[str] = []
+
+    for line in lines:
+        key = re.sub(r"\s+", " ", line.lower())
+        if key in seen:
+            continue
+        seen.add(key)
+        unique_lines.append(re.sub(r"\s+", " ", line))
+
+    compact = "\n".join(unique_lines)
+    return compact[:max_chars]
+
+
+def _compact_holdings_for_prompt(holdings: list[dict[str, Any]], max_items: int = 80) -> str:
+    """Serialize holdings into a short, token-efficient line format."""
+    merged: dict[str, dict[str, Any]] = {}
+    for holding in holdings:
+        key = f"{str(holding.get('name') or '').strip().upper()}|{holding.get('instrument_type') or ''}"
+        if not key or key == "|":
+            continue
+
+        existing = merged.get(key)
+        if existing is None:
+            merged[key] = {
+                "name": str(holding.get("name") or "").strip(),
+                "instrument_type": holding.get("instrument_type") or "",
+                "quantity": float(holding.get("quantity") or 0),
+                "invested_value": float(holding.get("invested_value") or 0),
+                "current_value": float(holding.get("current_value") or 0),
+                "category": str(holding.get("category") or "").strip(),
+            }
+            continue
+
+        existing["quantity"] += float(holding.get("quantity") or 0)
+        existing["invested_value"] += float(holding.get("invested_value") or 0)
+        existing["current_value"] += float(holding.get("current_value") or 0)
+
+    compact_rows: list[str] = []
+    for item in list(merged.values())[:max_items]:
+        category = item["category"] if item["category"] else "-"
+        compact_rows.append(
+            "|".join(
+                [
+                    str(item["name"]),
+                    str(item["instrument_type"]),
+                    f"q={item['quantity']:.4f}",
+                    f"inv={item['invested_value']:.2f}",
+                    f"cur={item['current_value']:.2f}",
+                    f"cat={category}",
+                ]
+            )
+        )
+
+    return "\n".join(compact_rows)
+
+
+def _build_compact_analysis_input(
+    sanitized_text: str,
+    holdings: list[dict[str, Any]] | None,
+    source_count: int,
+) -> str:
+    holdings = holdings or []
+    holdings_blob = _compact_holdings_for_prompt(holdings)
+    text_blob = _compact_text_for_prompt(sanitized_text)
+
+    parts = [
+        f"sources={source_count}",
+        f"holdings_count={len(holdings)}",
+    ]
+    if holdings_blob:
+        parts.append("holdings_compact:\n" + holdings_blob)
+    if text_blob:
+        parts.append("text_excerpt:\n" + text_blob)
+    return "\n\n".join(parts)
+
+
+async def get_portfolio_analysis(
+    sanitized_text: str,
+    holdings: list[dict[str, Any]] | None = None,
+    source_count: int = 1,
+) -> Dict[str, Any]:
     endpoint = os.getenv("CLOUD_LLM_ENDPOINT")
     api_key = os.getenv("CLOUD_LLM_API_KEY")
     anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
@@ -144,29 +228,25 @@ async def get_portfolio_analysis(sanitized_text: str) -> Dict[str, Any]:
     if not endpoint or (not api_key and not anthropic_api_key and not use_ollama):
         return _fallback_analysis(sanitized_text)
 
+    compact_input = _build_compact_analysis_input(
+        sanitized_text=sanitized_text,
+        holdings=holdings,
+        source_count=max(1, source_count),
+    )
+
     json_instruction = (
-        "Return ONLY a valid JSON object. Required keys: "
-        "tickers (array of strings), sentiment_score (integer 0-100), "
-        "confidence_score (integer 0-100), logic_breakdown (string, write at least 3 sentences "
-        "explaining your reasoning about the portfolio mix, sector exposure, and market context), "
-        "data_verifier (array of strings listing your evidence sources), suggested_move (string). "
-        "Also include these enrichment keys for actionable insights: "
-        "portfolio_diagnosis (string: 1-2 sentence plain-English executive summary of the portfolio's "
-        "health and primary concern, e.g. 'Heavily concentrated in IT; moderate default risk'), "
-        "risk_flags (array of strings, up to 5, each a specific risk observable in the holdings, "
-        "e.g. 'IT sector overweight at ~45%', 'HDFC Bank showing -18% unrealised loss'), "
-        "top_actions (array of up to 6 objects, each with: ticker (string), "
-        "action ('BUY'|'SELL'|'HOLD'), reason (string, max 12 words), priority ('high'|'medium'|'low')). "
-        "Do not include any explanation outside the JSON."
+        "Return ONLY valid JSON. Required keys: "
+        "tickers (array strings, max 8), sentiment_score (0-100 int), confidence_score (0-100 int), "
+        "logic_breakdown (short, <=70 words), data_verifier (array strings, max 3), suggested_move (short string). "
+        "Also include: portfolio_diagnosis (<=30 words), risk_flags (array strings, max 5), "
+        "top_actions (array max 6 objects with ticker, action BUY/SELL/HOLD, reason <=12 words, priority high/medium/low)."
     )
 
     prompt = (
-        "Analyze the following investment portfolio holdings. "
-        "1. Identify ticker symbols and asset names. "
-        "2. Provide a sentiment score (0-100) based on the holdings mix. "
-        "3. Flag specific portfolio risks (concentration, losses, sector skew). "
-        "4. Recommend targeted actions per holding to maximise returns and minimise losses. "
-        f"Data:\n{sanitized_text}\n\n{json_instruction}"
+        "You are a portfolio analyst. Prioritize accuracy with concise output. "
+        "Use only provided data. If uncertain, lower confidence_score. "
+        "Focus on concentration risk, loss control, and high-probability improvements.\n\n"
+        f"DATA:\n{compact_input}\n\n{json_instruction}"
     )
 
     if use_ollama:
@@ -180,7 +260,7 @@ async def get_portfolio_analysis(sanitized_text: str) -> Dict[str, Any]:
     elif use_anthropic:
         payload = {
             "model": model,
-            "max_tokens": 900,
+            "max_tokens": 450,
             "messages": [{"role": "user", "content": prompt}],
         }
         headers = {

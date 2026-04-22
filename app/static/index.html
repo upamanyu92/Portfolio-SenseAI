@@ -101,11 +101,11 @@
             <path d="M10 3v10M5 8l5-5 5 5"/>
             <path d="M3 14v2a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2"/>
           </svg>
-          SELECT FILE FROM DEVICE
+          SELECT FILES FROM DEVICE
         </label>
-        <input type="file" id="file-input" accept=".pdf,.xlsx,.docx,.doc"
+        <input type="file" id="file-input" accept=".pdf,.xlsx,.docx,.doc" multiple
                class="sr-only" aria-label="Choose a holding statement file"/>
-        <p class="upload-hint">Supported: .PDF, .XLSX, .DOCX</p>
+        <p class="upload-hint">Supported: .PDF, .XLSX, .DOCX (bulk upload supported)</p>
         <div class="file-type-icons" aria-hidden="true">
           <span class="ft-icon">PDF</span>
           <span class="ft-icon">XLS</span>
@@ -280,7 +280,7 @@
         </svg>
         Upload New Statement
       </label>
-      <input type="file" id="file-input-h" accept=".pdf,.xlsx,.docx,.doc"
+      <input type="file" id="file-input-h" accept=".pdf,.xlsx,.docx,.doc" multiple
              class="sr-only" aria-label="Upload new statement"/>
     </div>
 

@@ -40,6 +40,8 @@ class AnalysisResult(BaseModel):
 class UploadResponse(BaseModel):
     job_id: str
     status: str
+    file_count: Optional[int] = None
+    filenames: List[str] = Field(default_factory=list)
 
 
 class JobStatusResponse(BaseModel):
