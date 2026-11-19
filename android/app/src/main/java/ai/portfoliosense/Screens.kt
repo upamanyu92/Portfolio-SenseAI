@@ -209,10 +209,8 @@ fun History(vm: PortfolioModel) {
 @Composable
 fun Account(vm: PortfolioModel, configure: () -> Unit) {
     Panel("Analysis service") {
-        Text(vm.endpoint.ifBlank { "Connect your PortfolioSense API to analyze statements." })
-        OutlinedButton(configure, enabled = !vm.busy) {
-            Text(if (vm.endpoint.isBlank()) "Connect server" else "Change server")
-        }
+        Text(if (vm.useNvidia) "Built-in analyzer · NVIDIA Nemotron" else vm.endpoint)
+        OutlinedButton(configure, enabled = !vm.busy) { Text("Configure analyzer") }
         Metric("AI provider", vm.result?.str("provider") ?: "Sample")
         Metric("Recent uploads", vm.history.size.toString())
     }
@@ -225,7 +223,9 @@ fun Account(vm: PortfolioModel, configure: () -> Unit) {
     History(vm)
     Panel("Data and privacy") {
         Text(
-            "Selected statements are sent over HTTPS to your configured server. PortfolioSense redacts PAN and phone numbers from extracted text before AI analysis."
+            if (vm.useNvidia)
+                "Your device extracts statement text and masks common PAN, email and numeric ID patterns before sending it to NVIDIA. Other identifying details may remain."
+            else "Selected statements are sent over HTTPS to your configured PortfolioSense server."
         )
         Text("Your latest report and recent upload history are saved on this device.")
     }

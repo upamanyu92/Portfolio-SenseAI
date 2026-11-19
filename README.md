@@ -38,4 +38,6 @@ arq app.worker.WorkerSettings
 
 Open `android/` in Android Studio, or run `./gradlew :app:assembleDebug` from that directory with JDK 17 and Android SDK 36. The Kotlin Compose app supports Android 13 (API 33) and newer.
 
-The dashboard opens with the illustrative portfolio from the web app. Choose **Account → Connect server** to set the HTTPS base URL of your own PortfolioSense FastAPI deployment. The API needs Redis and a running ARQ worker for uploads. Select **Upload statements** to analyze one or more PDF, XLSX, or DOCX files. The app retains the latest completed report and eight recent upload batches on the device. Markets displays the repository's illustrative snapshot.
+The dashboard opens with an illustrative portfolio. For built-in analysis, open **Account → Configure analyzer → NVIDIA**, enter your own NVIDIA API key, then select **Upload statements**. The app reads searchable PDFs, XLSX spreadsheets, and DOCX documents locally, masks common PAN, numeric ID and email patterns, and sends the extracted text to NVIDIA's hosted `nvidia/nemotron-3.5-lightning-30b-a3b` model. Other personal details can remain. This mode requires internet and model access. Image-only PDFs need a searchable export. The Android Keystore protects the locally stored key.
+
+**Custom server** retains the PortfolioSense HTTPS API, Redis, and ARQ analysis workflow. Existing server configurations remain selected after upgrading. The app retains the latest completed report and eight recent upload batches on the device. Markets displays the repository's illustrative snapshot.

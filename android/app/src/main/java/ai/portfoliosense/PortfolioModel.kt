@@ -34,6 +34,39 @@ data class ActivityEntry(val name: String, val state: String, val time: Long)
 
 class PortfolioModel(private val app: Application) : AndroidViewModel(app) {
     private val prefs = app.getSharedPreferences("portfolio", 0)
+    private val credential = NvidiaCredential(prefs)
+    var useNvidia by
+        mutableStateOf(
+            prefs.getBoolean("useNvidia", prefs.getString("endpoint", "").isNullOrEmpty())
+        )
+        private set
+
+    var hasKey by mutableStateOf(credential.configured)
+        private set
+
+    val configured
+        get() = if (useNvidia) hasKey else endpoint.isNotBlank()
+
+    fun selectNvidia(value: String): Boolean {
+        val token = value.trim()
+        if (token.isNotEmpty()) {
+            if (!token.startsWith("nvapi-") || token.any { it.isWhitespace() }) return false
+            if (runCatching { credential.save(token) }.isFailure) return false
+            hasKey = true
+        }
+        if (!hasKey) return false
+        useNvidia = true
+        prefs.edit().putBoolean("useNvidia", true).apply()
+        return true
+    }
+
+    private fun finish(report: JSONObject) {
+        prefs.edit().putString("result", report.toString()).apply()
+        result = report
+        update("Complete")
+        message = "Analysis complete"
+    }
+
     private val client =
         OkHttpClient.Builder().readTimeout(150, TimeUnit.SECONDS).followRedirects(false).build()
 
@@ -90,7 +123,8 @@ class PortfolioModel(private val app: Application) : AndroidViewModel(app) {
         )
             return false
         endpoint = url.toString().trimEnd('/')
-        prefs.edit().putString("endpoint", endpoint).apply()
+        useNvidia = false
+        prefs.edit().putString("endpoint", endpoint).putBoolean("useNvidia", false).apply()
         return true
     }
 
@@ -122,7 +156,8 @@ class PortfolioModel(private val app: Application) : AndroidViewModel(app) {
         }
 
     fun analyze(uris: List<Uri>) {
-        if (busy || uris.isEmpty() || endpoint.isEmpty()) return
+        if (busy || uris.isEmpty() || !configured) return
+        val native = useNvidia
         val base = endpoint
         busy = true
         message = "Preparing statements…"
@@ -177,6 +212,26 @@ class PortfolioModel(private val app: Application) : AndroidViewModel(app) {
                 persistHistory()
                 added = true
                 lastFiles = uris
+                if (native) {
+                    update("In progress")
+                    message = "Reading statements on this device…"
+                    val statement =
+                        withContext(Dispatchers.IO) {
+                            StatementReader.read(app, uris.zip(files.map { it.first }))
+                        }
+                    message = "Analyzing with NVIDIA Nemotron…"
+                    val report =
+                        withContext(Dispatchers.IO) {
+                            val token =
+                                runCatching { credential.get() }
+                                    .getOrElse {
+                                        error("Please enter your NVIDIA key again in Account.")
+                                    }
+                            NvidiaAnalyzer.analyze(client, token, statement)
+                        }
+                    finish(report)
+                    return@launch
+                }
                 message = "Uploading statements…"
                 val job =
                     withContext(Dispatchers.IO) {
@@ -196,10 +251,7 @@ class PortfolioModel(private val app: Application) : AndroidViewModel(app) {
                     when (data.getString("status")) {
                         "complete" -> {
                             val report = data.getJSONObject("result")
-                            prefs.edit().putString("result", report.toString()).apply()
-                            result = report
-                            update("Complete")
-                            message = "Analysis complete"
+                            finish(report)
                             return@launch
                         }
                         "failed",

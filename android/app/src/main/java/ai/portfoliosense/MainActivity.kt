@@ -131,7 +131,7 @@ fun PortfolioApp(vm: PortfolioModel) {
         )
     }
     val upload = {
-        if (vm.endpoint.isEmpty()) {
+        if (!vm.configured) {
             pickAfterConfig = true
             config = true
         } else pick()
@@ -211,33 +211,76 @@ fun PortfolioApp(vm: PortfolioModel) {
         }
     }
     if (config) {
+        var native by rememberSaveable { mutableStateOf(vm.useNvidia) }
+        var token by remember { mutableStateOf("") }
         var url by rememberSaveable { mutableStateOf(vm.endpoint) }
         var error by rememberSaveable { mutableStateOf(false) }
         AlertDialog(
             onDismissRequest = { config = false },
-            title = { Text("Analysis server") },
+            title = { Text("Portfolio analyzer") },
             text = {
                 Column(verticalArrangement = spacing) {
-                    Text(
-                        "Enter the HTTPS address of your PortfolioSense API. Selected statements will be sent to this server."
-                    )
-                    OutlinedTextField(
-                        url,
-                        {
-                            url = it
-                            error = false
-                        },
-                        label = { Text("Server URL") },
-                        singleLine = true,
-                        isError = error,
-                    )
-                    if (error) Text("Enter a valid HTTPS server address.", color = palette.error)
+                    Row(horizontalArrangement = spacing) {
+                        FilterChip(
+                            native,
+                            {
+                                native = true
+                                error = false
+                            },
+                            { Text("NVIDIA") },
+                        )
+                        FilterChip(
+                            !native,
+                            {
+                                native = false
+                                error = false
+                            },
+                            { Text("Custom server") },
+                        )
+                    }
+                    if (native) {
+                        Text(
+                            "PortfolioSense reads your statements on this device and sends extracted text to NVIDIA Nemotron for analysis."
+                        )
+                        OutlinedTextField(
+                            token,
+                            {
+                                token = it
+                                error = false
+                            },
+                            singleLine = true,
+                            isError = error,
+                            visualTransformation =
+                                androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                            label = {
+                                Text(
+                                    if (vm.hasKey) "Replace saved NVIDIA key" else "NVIDIA API key"
+                                )
+                            },
+                        )
+                        if (error)
+                            Text("Enter a valid NVIDIA key and try again.", color = palette.error)
+                    } else {
+                        Text("Selected documents will be sent to your PortfolioSense server.")
+                        OutlinedTextField(
+                            url,
+                            {
+                                url = it
+                                error = false
+                            },
+                            label = { Text("HTTPS server URL") },
+                            singleLine = true,
+                            isError = error,
+                        )
+                        if (error)
+                            Text("Enter a valid HTTPS server address.", color = palette.error)
+                    }
                 }
             },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        if (vm.setEndpoint(url)) {
+                        if (if (native) vm.selectNvidia(token) else vm.setEndpoint(url)) {
                             config = false
                             if (pickAfterConfig) pick()
                         } else error = true
@@ -361,7 +404,9 @@ private fun Dashboard(vm: PortfolioModel, upload: () -> Unit, showHoldings: () -
             Text(it.str("reason"))
             HorizontalDivider()
         }
-        if (actions.isEmpty()) {
+        if (actions.isEmpty() && report?.str("provider") == "NVIDIA Nemotron")
+            Text("No trade signals supported by this statement.")
+        else if (actions.isEmpty()) {
             val tickers =
                 report
                     ?.strings("tickers")
