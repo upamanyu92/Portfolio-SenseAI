@@ -212,7 +212,6 @@ fun PortfolioApp(vm: PortfolioModel) {
     }
     if (config) {
         var native by rememberSaveable { mutableStateOf(vm.useNvidia) }
-        var token by remember { mutableStateOf("") }
         var url by rememberSaveable { mutableStateOf(vm.endpoint) }
         var error by rememberSaveable { mutableStateOf(false) }
         AlertDialog(
@@ -242,24 +241,6 @@ fun PortfolioApp(vm: PortfolioModel) {
                         Text(
                             "PortfolioSense reads your statements on this device and sends extracted text to NVIDIA Nemotron for analysis."
                         )
-                        OutlinedTextField(
-                            token,
-                            {
-                                token = it
-                                error = false
-                            },
-                            singleLine = true,
-                            isError = error,
-                            visualTransformation =
-                                androidx.compose.ui.text.input.PasswordVisualTransformation(),
-                            label = {
-                                Text(
-                                    if (vm.hasKey) "Replace saved NVIDIA key" else "NVIDIA API key"
-                                )
-                            },
-                        )
-                        if (error)
-                            Text("Enter a valid NVIDIA key and try again.", color = palette.error)
                     } else {
                         Text("Selected documents will be sent to your PortfolioSense server.")
                         OutlinedTextField(
@@ -280,7 +261,7 @@ fun PortfolioApp(vm: PortfolioModel) {
             confirmButton = {
                 TextButton(
                     onClick = {
-                        if (if (native) vm.selectNvidia(token) else vm.setEndpoint(url)) {
+                        if (if (native) vm.selectNvidia() else vm.setEndpoint(url)) {
                             config = false
                             if (pickAfterConfig) pick()
                         } else error = true

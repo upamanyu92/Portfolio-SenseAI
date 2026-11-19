@@ -11,8 +11,13 @@ android {
         applicationId 'ai.portfoliosense.android'
         minSdk 33
         targetSdk 35
-        versionCode 2
-        versionName '1.1'
+        versionCode 3
+        versionName '1.2'
+        def apiKey = providers.environmentVariable('NVIDIA_API_KEY').orNull
+        if (!apiKey || !(apiKey ==~ /nvapi-[A-Za-z0-9_-]+/)) {
+            throw new GradleException('Set NVIDIA_API_KEY before building the Android client.')
+        }
+        resValue 'string', 'nvidia_api_key', apiKey
     }
     buildFeatures { compose true }
     compileOptions {

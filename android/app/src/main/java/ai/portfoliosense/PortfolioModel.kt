@@ -34,27 +34,16 @@ data class ActivityEntry(val name: String, val state: String, val time: Long)
 
 class PortfolioModel(private val app: Application) : AndroidViewModel(app) {
     private val prefs = app.getSharedPreferences("portfolio", 0)
-    private val credential = NvidiaCredential(prefs)
     var useNvidia by
         mutableStateOf(
             prefs.getBoolean("useNvidia", prefs.getString("endpoint", "").isNullOrEmpty())
         )
         private set
 
-    var hasKey by mutableStateOf(credential.configured)
-        private set
-
     val configured
-        get() = if (useNvidia) hasKey else endpoint.isNotBlank()
+        get() = useNvidia || endpoint.isNotBlank()
 
-    fun selectNvidia(value: String): Boolean {
-        val token = value.trim()
-        if (token.isNotEmpty()) {
-            if (!token.startsWith("nvapi-") || token.any { it.isWhitespace() }) return false
-            if (runCatching { credential.save(token) }.isFailure) return false
-            hasKey = true
-        }
-        if (!hasKey) return false
+    fun selectNvidia(): Boolean {
         useNvidia = true
         prefs.edit().putBoolean("useNvidia", true).apply()
         return true
@@ -108,6 +97,8 @@ class PortfolioModel(private val app: Application) : AndroidViewModel(app) {
         get() = result?.optInt("sentiment_score") ?: sample.getInt("healthScore")
 
     init {
+        if (prefs.contains("nvidia.token"))
+            prefs.edit().remove("nvidia.token").remove("nvidia.iv").apply()
         if (history.firstOrNull()?.state in listOf("Uploading", "Queued", "In progress"))
             update("Interrupted")
     }
@@ -222,12 +213,11 @@ class PortfolioModel(private val app: Application) : AndroidViewModel(app) {
                     message = "Analyzing with NVIDIA Nemotron…"
                     val report =
                         withContext(Dispatchers.IO) {
-                            val token =
-                                runCatching { credential.get() }
-                                    .getOrElse {
-                                        error("Please enter your NVIDIA key again in Account.")
-                                    }
-                            NvidiaAnalyzer.analyze(client, token, statement)
+                            NvidiaAnalyzer.analyze(
+                                client,
+                                app.getString(R.string.nvidia_api_key),
+                                statement,
+                            )
                         }
                     finish(report)
                     return@launch

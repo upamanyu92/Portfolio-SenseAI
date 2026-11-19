@@ -42,7 +42,7 @@ internal object NvidiaAnalyzer {
                     when (response.code) {
                         401,
                         403 ->
-                            "NVIDIA rejected the API key. Check the key and model access in Account."
+                            "NVIDIA rejected the API key. Install an updated build or select your custom server."
                         429 -> "NVIDIA rate or quota limit reached. Try again later."
                         else -> "NVIDIA analysis failed (HTTP ${response.code})."
                     }
