@@ -33,3 +33,9 @@ arq app.worker.WorkerSettings
 ## Deployment
 
 `render.yaml` defines web + worker + internal redis services suitable for Render free tier deployment.
+
+## Android client
+
+Open `android/` in Android Studio, or run `./gradlew :app:assembleDebug` from that directory with JDK 17 and Android SDK 36. The Kotlin Compose app supports Android 13 (API 33) and newer.
+
+The dashboard opens with the illustrative portfolio from the web app. Choose **Account → Connect server** to set the HTTPS base URL of your own PortfolioSense FastAPI deployment. The API needs Redis and a running ARQ worker for uploads. Select **Upload statements** to analyze one or more PDF, XLSX, or DOCX files. The app retains the latest completed report and eight recent upload batches on the device. Markets displays the repository's illustrative snapshot.

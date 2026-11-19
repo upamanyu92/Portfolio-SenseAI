@@ -1,0 +1,142 @@
+{
+  "indices": [
+    {
+      "name": "NIFTY 50",
+      "value": "22,147",
+      "chg": "+0.48%",
+      "up": true
+    },
+    {
+      "name": "SENSEX",
+      "value": "73,088",
+      "chg": "+0.51%",
+      "up": true
+    },
+    {
+      "name": "NIFTY IT",
+      "value": "35,612",
+      "chg": "-1.23%",
+      "up": false
+    },
+    {
+      "name": "NIFTY Bank",
+      "value": "47,204",
+      "chg": "+0.83%",
+      "up": true
+    },
+    {
+      "name": "NIFTY Mid",
+      "value": "41,830",
+      "chg": "+0.35%",
+      "up": true
+    },
+    {
+      "name": "Gold (MCX)",
+      "value": "₹72,450",
+      "chg": "+0.92%",
+      "up": true
+    }
+  ],
+  "sectors": {
+    "labels": [
+      "PSU",
+      "Gold",
+      "Pharma",
+      "Energy",
+      "Infra",
+      "FMCG",
+      "Auto",
+      "IT"
+    ],
+    "data": [
+      18.4,
+      14.2,
+      9.7,
+      7.3,
+      6.1,
+      -1.2,
+      -3.4,
+      -8.6
+    ]
+  },
+  "gainers": [
+    {
+      "name": "NATL ALUM",
+      "price": "₹371",
+      "chg": "+12.1%"
+    },
+    {
+      "name": "TATA GOLD",
+      "price": "₹14",
+      "chg": "+8.7%"
+    },
+    {
+      "name": "VODAIDEA",
+      "price": "₹8.9",
+      "chg": "+5.5%"
+    },
+    {
+      "name": "NHPC",
+      "price": "₹77",
+      "chg": "+4.2%"
+    },
+    {
+      "name": "NTPC GREEN",
+      "price": "₹95",
+      "chg": "+2.8%"
+    }
+  ],
+  "losers": [
+    {
+      "name": "SPACENET",
+      "price": "₹3.3",
+      "chg": "-87.5%"
+    },
+    {
+      "name": "SUZLON",
+      "price": "₹41",
+      "chg": "-47.5%"
+    },
+    {
+      "name": "SPRIGHT AGRO",
+      "price": "₹0.47",
+      "chg": "-46.6%"
+    },
+    {
+      "name": "MONOTYPE",
+      "price": "₹0.39",
+      "chg": "-30.4%"
+    },
+    {
+      "name": "LIC INDIA",
+      "price": "₹766",
+      "chg": "-15.3%"
+    }
+  ],
+  "fii": {
+    "months": [
+      "Oct",
+      "Nov",
+      "Dec",
+      "Jan",
+      "Feb",
+      "Mar"
+    ],
+    "fii": [
+      -3200,
+      -1800,
+      2100,
+      1600,
+      -2900,
+      1400
+    ],
+    "dii": [
+      4100,
+      3200,
+      1800,
+      2900,
+      4300,
+      2700
+    ]
+  }
+}
