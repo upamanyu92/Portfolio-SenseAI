@@ -100,6 +100,7 @@ class PortfolioModel(private val app: Application) : AndroidViewModel(app) {
         prefs.edit().putString("result", report.toString()).putString("quantPlan", diagnostics.toString()).apply()
         result = report
         plan = diagnostics
+        refreshPrices()
         update("Complete")
         message = "Analysis complete"
         if (useNvidia && diagnostics.has("total_value")) {
@@ -146,11 +147,50 @@ class PortfolioModel(private val app: Application) : AndroidViewModel(app) {
     var lastFiles = emptyList<Uri>()
         private set
 
-    private val holdingsSource
-        get() = result ?: sample
+    private val prices = HoldingPrices(app.cacheDir)
+    private var priceCache by mutableStateOf(JSONObject(prefs.getString("holdingQuotes", "{}") ?: "{}"))
+    var priceStatus by mutableStateOf("")
+        private set
+    var refreshingPrices by mutableStateOf(false)
+        private set
+    private var priceJob: Job? = null
+    private var pricedReport: JSONObject? = null
 
-    val holdings
-        get() = holdingsSource.rows("holdings")
+    fun refreshPrices() {
+        val snapshot = result ?: return
+        if (pricedReport === snapshot && priceJob?.isActive == true) return
+        priceJob?.cancel()
+        pricedReport = snapshot
+        val rows = snapshot.rows("holdings")
+        if (rows.isEmpty()) { refreshingPrices = false; priceStatus = ""; return }
+        refreshingPrices = true
+        priceStatus = "Refreshing prices…"
+        priceJob = viewModelScope.launch {
+            try {
+                val fetched = prices.load(rows)
+                if (result !== snapshot) return@launch
+                val updated = JSONObject()
+                for (row in rows) {
+                    val id = holdingId(row)
+                    val old = priceCache.optJSONObject(id)
+                    val latest = fetched[id]
+                    val keep = if (latest != null && latest.epoch >= (old?.optLong("epoch") ?: 0L))
+                        latest.json() else old
+                    if (keep != null) updated.put(id,keep)
+                }
+                priceCache = updated
+                prefs.edit().putString("holdingQuotes",updated.toString()).apply()
+                val count=rows.count { holdingId(it) in fetched }
+                priceStatus = if(count==rows.size) "Prices checked for all ${rows.size} positions."
+                    else "Prices available for $count of ${rows.size} positions. Other rows use their last saved values."
+            } catch(e:CancellationException) { throw e }
+            catch(e:Exception) { if(result === snapshot) priceStatus="Price feeds unavailable. Showing saved values." }
+            finally { if(result === snapshot) refreshingPrices=false }
+        }
+    }
+
+    val holdings: List<JSONObject>
+        get() = result?.rows("holdings")?.map { applyPrice(it,priceCache.optJSONObject(holdingId(it))) } ?: sample.rows("holdings")
 
     val score
         get() = result?.optInt("sentiment_score") ?: sample.getInt("healthScore")

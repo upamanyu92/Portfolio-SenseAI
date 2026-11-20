@@ -51,6 +51,13 @@ fun Holdings(vm: PortfolioModel, query: String, setQuery: (String) -> Unit, uplo
             "P&L % ↓",
             "Quantity ↓",
         )
+    if(vm.result!=null) {
+        Panel("Holding prices") {
+            Text("Exchange quotes may be delayed. Mutual funds use their latest published NAV.")
+            OutlinedButton(onClick=vm::refreshPrices,enabled=!vm.refreshingPrices) { Text(if(vm.refreshingPrices) "Refreshing…" else "Refresh prices") }
+            if(vm.priceStatus.isNotBlank()) Text(vm.priceStatus,color=palette.onSurfaceVariant)
+        }
+    }
     Summary(vm.holdings)
     Button(upload, enabled = !vm.busy) { Text("Upload statements") }
     OutlinedTextField(
@@ -107,7 +114,18 @@ fun Holdings(vm: PortfolioModel, query: String, setQuery: (String) -> Unit, uplo
                 color = palette.primary,
             )
             Metric("Quantity", h.number("quantity")?.toString() ?: "—")
-            Metric("Current value", money(h.number("current_value")))
+            val quote=h.optJSONObject("quote")
+            val qty=h.number("quantity")
+            if(quote!=null) {
+                val daily=quote.optBoolean("daily")
+                Metric(if(quote.str("source")=="AMFI NAV") "Latest NAV" else "Latest price",money(quote.number("price")))
+                val stamp=java.time.Instant.ofEpochSecond(quote.getLong("epoch")).atZone(java.time.ZoneId.of("Asia/Kolkata"))
+                val fmt=java.time.format.DateTimeFormatter.ofPattern(if(daily) "dd MMM yyyy" else "dd MMM yyyy, HH:mm 'IST'", java.util.Locale.ENGLISH)
+                Text(quote.str("source")+" · "+stamp.format(fmt),color=palette.onSurfaceVariant)
+            } else if(qty!=null && qty>0 && h.number("current_value")!=null) {
+                Metric("Statement price",money(h.getDouble("current_value")/qty))
+            }
+            Metric(if(quote!=null && qty!=null && qty>=0) "Market value" else "Statement value", money(h.number("current_value")))
             Metric("Invested", money(h.number("invested_value")))
             Metric("P&L", money(h.pnl()))
             val pct =

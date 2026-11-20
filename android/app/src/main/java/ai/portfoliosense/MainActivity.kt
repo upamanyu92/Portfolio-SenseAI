@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import java.text.NumberFormat
 import java.util.Locale
@@ -113,6 +114,12 @@ fun Bars(labels: List<String>, values: List<Double>, unit: String = "%") {
 
 @Composable
 fun PortfolioApp(vm: PortfolioModel) {
+    val owner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    LaunchedEffect(owner, vm) {
+        owner.lifecycle.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+            while (true) { vm.refreshPrices(); kotlinx.coroutines.delay(60_000L) }
+        }
+    }
     var page by rememberSaveable { mutableStateOf("Dashboard") }
     var config by rememberSaveable { mutableStateOf(false) }
     var pickAfterConfig by rememberSaveable { mutableStateOf(false) }
