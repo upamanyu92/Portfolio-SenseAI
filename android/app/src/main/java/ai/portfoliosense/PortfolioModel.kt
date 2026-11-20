@@ -82,7 +82,7 @@ class PortfolioModel(private val app: Application) : AndroidViewModel(app) {
 
     fun reviewPlan() {
         val original=plan ?: return
-        if(busy || original.str("status")!="ready") return
+        if(busy || (original.str("status")!="ready" && !original.has("total_value"))) return
         busy=true
         message="Reviewing the calculated plan with NVIDIA…"
         viewModelScope.launch {
@@ -96,23 +96,23 @@ class PortfolioModel(private val app: Application) : AndroidViewModel(app) {
     }
 
     private suspend fun finish(report: JSONObject) {
-        val rows=report.rows("holdings")
-        val items=JSONArray()
-        val known=rows.isNotEmpty() && rows.all { it.number("current_value")!=null && it.str("instrument_type") in listOf("stock","mutual_fund") }
-        if(known) {
-            rows.forEach { h ->
-                val fund=h.str("instrument_type")=="mutual_fund"
-                items.put(JSONObject().put("asset_id",h.str("isin").ifBlank { h.str("name") }).put("asset_type",if(fund) "MF_UNCLASSIFIED" else "STOCK").put("market_value",h.number("current_value")))
-            }
-        }
-        val diagnostics=if(known) runCatching { QuantRuntime.run(app,JSONObject().put("positions",items)) }
-            .getOrElse {JSONObject().put("status","inputs_required").put("reason","Import verified positions and market inputs to calculate the plan.")}
-        else JSONObject().put("status","inputs_required").put("reason","The report needs identifiable positions with INR market values.")
-        savePlan(diagnostics.put("source","Latest statement"))
-        prefs.edit().putString("result", report.toString()).apply()
+        val diagnostics = statementInsight(report)
+        prefs.edit().putString("result", report.toString()).putString("quantPlan", diagnostics.toString()).apply()
         result = report
+        plan = diagnostics
         update("Complete")
         message = "Analysis complete"
+        if (useNvidia && diagnostics.has("total_value")) {
+            message = "Reviewing concentration and costs…"
+            try {
+                val review = withContext(Dispatchers.IO) {
+                    NvidiaAnalyzer.review(client, app.getString(R.string.nvidia_api_key), diagnostics)
+                }
+                savePlan(JSONObject(diagnostics.toString()).put("review", review))
+                message = "Analysis complete"
+            } catch (e: CancellationException) { throw e }
+            catch (e: Exception) { message = "Statement analyzed. AI review unavailable. You can retry it below." }
+        }
     }
 
     private val client =
@@ -156,6 +156,10 @@ class PortfolioModel(private val app: Application) : AndroidViewModel(app) {
         get() = result?.optInt("sentiment_score") ?: sample.getInt("healthScore")
 
     init {
+        result?.let { previous ->
+            if ((plan == null || plan?.str("source") == "Latest statement") && plan?.has("statement_version") != true)
+                savePlan(statementInsight(previous))
+        }
         if (prefs.contains("nvidia.token"))
             prefs.edit().remove("nvidia.token").remove("nvidia.iv").apply()
         if (history.firstOrNull()?.state in listOf("Uploading", "Queued", "In progress"))

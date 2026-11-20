@@ -324,7 +324,11 @@ private fun Dashboard(vm: PortfolioModel, upload: () -> Unit, showHoldings: () -
         )
     }
     QuantPanel(vm)
-    Panel("Strategy insight") {
+    var showStatementDetails by rememberSaveable { mutableStateOf(false) }
+    if (report != null) TextButton({ showStatementDetails = !showStatementDetails }) {
+        Text(if(showStatementDetails) "Hide statement reconciliation" else "View statement reconciliation")
+    }
+    if(report == null || showStatementDetails) Panel(if(report == null) "Strategy insight" else "Statement reconciliation") {
         report?.str("portfolio_diagnosis")?.takeIf(String::isNotBlank)?.let { Text(it) }
         Text(
             report?.str("suggested_move") ?: vm.sample.str("suggestion"),

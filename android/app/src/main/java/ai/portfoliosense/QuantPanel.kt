@@ -21,6 +21,8 @@ private fun label(k:String)=when {
 @Composable
 internal fun QuantPanel(vm:PortfolioModel) {
     val plan=vm.plan
+    val statement = plan?.has("statement_version") == true
+    var advanced by rememberSaveable { mutableStateOf(false) }
     val context=LocalContext.current
     val picker=rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { if(it!=null) vm.importPlan(it) }
     var detail by rememberSaveable { mutableStateOf(false) }
@@ -32,10 +34,23 @@ internal fun QuantPanel(vm:PortfolioModel) {
             requireNotNull(context.contentResolver.openOutputStream(uri,"wt")).bufferedWriter().use { it.write(payload) }
         }.onFailure { notice="Could not save the JSON file." }.onSuccess { notice="JSON file saved." }
     }
-    Panel("Net trade plan") {
+    Panel(if (statement) "Portfolio action summary" else "Net trade plan") {
         Text(plan?.str("source")?.ifBlank { null } ?: "Import portfolio assumptions to estimate one-year outcomes.")
+        if (statement && plan != null) {
+            StatementSummary(plan)
+            if (plan.has("total_value")) {
+                if (plan.str("review").isNotBlank()) {
+                    Text("AI interpretation",style=MaterialTheme.typography.titleSmall)
+                    Text(plan.str("review"))
+                }
+                TextButton(onClick={vm.reviewPlan()},enabled=!vm.busy){Text(if(plan.str("review").isBlank()) "Review summary with NVIDIA" else "Refresh AI review")}
+            }
+            TextButton(onClick={advanced=!advanced}) { Text(if(advanced) "Hide planner tools" else "Open full optimizer") }
+        }
+        if(!statement || advanced) {
         OutlinedButton(onClick={picker.launch(arrayOf("application/json","text/plain","application/octet-stream"))},enabled=!vm.busy){Text("Import planning JSON")}
         TextButton(onClick={exportReport=false;save.launch("PortfolioSense-example.json")},enabled=!vm.busy){Text("Save example input")}
+        }
         if(notice.isNotEmpty()) Text(notice)
         if(plan!=null) {
             val ready=plan.str("status")=="ready"
@@ -62,18 +77,18 @@ internal fun QuantPanel(vm:PortfolioModel) {
                 }
                 TextButton(onClick={vm.reviewPlan()},enabled=!vm.busy){Text("Review plan with NVIDIA")}
                 if(plan.str("review").isNotBlank()) Text(plan.str("review"))
-            } else {
+            } else if (!statement) {
                 Text(plan.str("reason").ifBlank { "More portfolio inputs are needed before orders can be calculated." })
                 val missing=plan.strings("missing")
-                if(missing.isNotEmpty()) Text("Required · "+missing.joinToString())
+                if(missing.isNotEmpty()) Text("Inputs needed · "+missing.map { it.substringAfterLast('.').replace('_',' ') }.distinct().joinToString())
             }
             TextButton(onClick={detail=!detail}){Text(if(detail)"Hide exposure and costs" else "View exposure and costs")}
             if(detail) {
                 val look=plan.optJSONObject("lookthrough") ?: JSONObject()
                 val after=plan.optJSONObject("target_lookthrough")
-                look.keys().forEach { k->Metric(label(k),percent(look.getDouble(k))+(after?.let { " → "+percent(it.optDouble(k,0.0)) } ?: "")) }
+                look.keys().forEach { k->Metric(if(statement) { val id=k.removePrefix("__unallocated:"); (if(k.startsWith("__unallocated:")) "Underlying mix unknown · " else "")+(plan.optJSONObject("names")?.optString(id,id) ?: label(k)) } else label(k),percent(look.getDouble(k))+(after?.let { " → "+percent(it.optDouble(k,0.0)) } ?: "")) }
                 val breaches=plan.optJSONObject("concentration")
-                breaches?.keys()?.forEach { k->Metric("Above cap · "+k,percent(breaches.getDouble(k))) }
+                if(!statement) breaches?.keys()?.forEach { k->Metric("Above cap · "+k,percent(breaches.getDouble(k))) }
                 val duplicates=plan.optJSONObject("direct_fund_duplicates")
                 duplicates?.keys()?.forEach { k->val row=duplicates.getJSONObject(k); Metric("Also held in funds · "+k,percent(row.getDouble("through_funds"))) }
                 val overlap=plan.optJSONObject("overlap")
@@ -84,5 +99,37 @@ internal fun QuantPanel(vm:PortfolioModel) {
             }
             TextButton(onClick={exportReport=true;save.launch("PortfolioSense-plan.json")},enabled=!vm.busy){Text("Export plan JSON")}
         }
+    }
+}
+
+
+@Composable
+private fun StatementSummary(plan: JSONObject) {
+    if (!plan.has("total_value")) {
+        Text(plan.str("reason"))
+        return
+    }
+    val scenarios = plan.rows("cap_scenarios")
+    val cap = percent(plan.getDouble("stock_cap"))
+    if (scenarios.isEmpty()) Text("Direct stock positions are within the $cap cap on the reported holdings.")
+    else {
+        Text("${scenarios.size} direct stock holdings above the $cap cap · ${money(plan.number("total_excess"))} total excess.",style=MaterialTheme.typography.titleMedium)
+        Text("Cap-only scenario at statement prices. Sale proceeds stay in the portfolio as cash. Amounts are before tax and costs.")
+        scenarios.forEach { row ->
+            HorizontalDivider()
+            Text(row.str("name"),style=MaterialTheme.typography.titleSmall)
+            Metric("Current weight / cap",percent(row.getDouble("current_weight"))+" / "+cap)
+            Metric("Value above cap",money(row.number("excess_value")))
+            if (row.optBoolean("below_minimum")) Text("Below the planner’s ₹2,500 minimum trade. Monitor this breach.")
+            else if (row.has("illustrative_units")) Text("Trimming ${row.getLong("illustrative_units")} shares at ${money(row.number("statement_price"))} would bring this holding to ${percent(row.getDouble("weight_after"))}.")
+        }
+        Text("Without selling, adding ${money(plan.number("new_cash_to_dilute"))} in cash would bring all direct stock positions within the cap at these prices.")
+        Text("These figures measure concentration. Comparing after-tax outcomes requires tradeable lots, acquisition costs, charges and return assumptions.")
+    }
+    val funds = plan.rows("funds")
+    if (funds.isNotEmpty()) {
+        Text("Fund exposure",style=MaterialTheme.typography.titleSmall)
+        Text(funds.joinToString { it.str("name")+" ("+percent(it.getDouble("weight"))+")" })
+        Text("Underlying exposure and overlap need fund disclosures. Annual fee drag and switch savings need expense ratios for the current and alternative plans.")
     }
 }
