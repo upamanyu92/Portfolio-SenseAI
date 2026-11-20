@@ -199,12 +199,16 @@ fun PortfolioApp(vm: PortfolioModel) {
                         color = palette.primary,
                         style = MaterialTheme.typography.labelLarge,
                     )
-                if (vm.message.isNotBlank()) {
+                if (page != "Earn & Spend" && vm.message.isNotBlank()) {
                     Text(vm.message, color = palette.secondary)
                     if (vm.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
                 }
                 when (page) {
-                    "Dashboard" -> Dashboard(vm, upload, { page = "Holdings" })
+                    "Dashboard" -> {
+                        OutlinedButton(onClick = { page = "Earn & Spend" },modifier=Modifier.fillMaxWidth()) { Text("Earn & Spend") }
+                        Dashboard(vm, upload, { page = "Holdings" })
+                    }
+                    "Earn & Spend" -> ExpenseScreen()
                     "Holdings" -> Holdings(vm, query, { query = it }, upload)
                     "Markets" -> Markets(vm)
                     "Learn" -> Learn(vm)
