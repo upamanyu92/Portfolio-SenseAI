@@ -323,6 +323,7 @@ private fun Dashboard(vm: PortfolioModel, upload: () -> Unit, showHoldings: () -
             color = palette.onSurfaceVariant,
         )
     }
+    QuantPanel(vm)
     Panel("Strategy insight") {
         report?.str("portfolio_diagnosis")?.takeIf(String::isNotBlank)?.let { Text(it) }
         Text(

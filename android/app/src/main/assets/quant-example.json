@@ -1,0 +1,83 @@
+{
+  "as_of": "2026-11-20",
+  "cash": 0,
+  "stock_cap": 0.1,
+  "non_stock_sleeves": [
+    "Diversified basket"
+  ],
+  "min_trade_value": 2500,
+  "max_turnover": 2,
+  "risk_aversion": 3,
+  "tilts": {
+    "momentum": 0.002
+  },
+  "tax_policy": {
+    "short_rate": 0.2,
+    "long_rate": 0.125,
+    "slab_rate": 0.3,
+    "annual_exemption": 125000,
+    "prior_equity_short": 0,
+    "prior_long": 0,
+    "prior_slab_short": 0
+  },
+  "covariance": [
+    [
+      0.025,
+      0.025
+    ],
+    [
+      0.025,
+      0.025
+    ]
+  ],
+  "positions": [
+    {
+      "asset_type": "MF_EQUITY",
+      "price": 100,
+      "unit_step": 0.001,
+      "expected_return": 0.095,
+      "max_weight": 1,
+      "tax_regime": "equity_stt",
+      "constituents": {
+        "Example stock": 0.05,
+        "Diversified basket": 0.95
+      },
+      "buy_rate": 0.0001,
+      "sell_rate": 0.0001,
+      "signal_confidence": 0.75,
+      "asset_id": "Example regular plan",
+      "market_value": 100000,
+      "expense_ratio": 0.024,
+      "lots": [
+        {
+          "acquired": "2024-07-01",
+          "units": 1000,
+          "basis": 92,
+          "exit_load": 0
+        }
+      ],
+      "momentum": 0.2,
+      "switch_to": "Example direct plan"
+    },
+    {
+      "asset_type": "MF_EQUITY",
+      "price": 100,
+      "unit_step": 0.001,
+      "expected_return": 0.095,
+      "max_weight": 1,
+      "tax_regime": "equity_stt",
+      "constituents": {
+        "Example stock": 0.05,
+        "Diversified basket": 0.95
+      },
+      "buy_rate": 0.0001,
+      "sell_rate": 0.0001,
+      "signal_confidence": 0.75,
+      "asset_id": "Example direct plan",
+      "market_value": 0,
+      "expense_ratio": 0.003,
+      "lots": [],
+      "momentum": 0.2
+    }
+  ]
+}

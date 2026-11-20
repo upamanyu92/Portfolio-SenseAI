@@ -11,8 +11,8 @@ android {
         applicationId 'ai.portfoliosense.android'
         minSdk 33
         targetSdk 35
-        versionCode 3
-        versionName '1.2'
+        versionCode 4
+        versionName '1.3'
         def apiKey = providers.environmentVariable('NVIDIA_API_KEY').orNull
         if (!apiKey || !(apiKey ==~ /nvapi-[A-Za-z0-9_-]+/)) {
             throw new GradleException('Set NVIDIA_API_KEY before building the Android client.')
@@ -40,3 +40,34 @@ dependencies {
     implementation 'androidx.compose.material:material-icons-core'
     implementation 'com.squareup.okhttp3:okhttp:5.3.2'
 }
+
+// The APK carries its Python runtime and SciPy wheels for offline planning.
+def quantAssets = layout.buildDirectory.dir('quant-assets')
+def prepareQuant = tasks.register('prepareQuantAssets') {
+    def manifest = rootProject.file('quant-runtime.sha256')
+    def engine = rootProject.file('../quant/engine.py')
+    inputs.files(manifest, engine)
+    outputs.dir(quantAssets)
+    doLast {
+        def dest = quantAssets.get().dir('quant').asFile
+        dest.mkdirs()
+        manifest.eachLine { line ->
+            def (expected, name) = line.tokenize()
+            def file = new File(dest, name)
+            def digest = { f -> java.security.MessageDigest.getInstance('SHA-256').digest(f.bytes).encodeHex().toString() }
+            if (!file.exists() || digest(file) != expected) {
+                def tmp = new File(dest, name + '.tmp')
+                def localCache = providers.environmentVariable('PORTFOLIO_RUNTIME_DIR').orNull
+                def source = localCache ? new File(localCache, name).toURI().toURL() : new URL('https://cdn.jsdelivr.net/pyodide/v0.27.7/full/' + name)
+                source.withInputStream { src ->
+                    tmp.withOutputStream { it << src }
+                }
+                if (digest(tmp) != expected) throw new GradleException('Runtime checksum mismatch for ' + name)
+                java.nio.file.Files.move(tmp.toPath(),file.toPath(),java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+            }
+        }
+        new File(dest, 'engine.py').bytes = engine.bytes
+    }
+}
+android.sourceSets.main.assets.srcDir(quantAssets)
+tasks.named('preBuild').configure { dependsOn prepareQuant }

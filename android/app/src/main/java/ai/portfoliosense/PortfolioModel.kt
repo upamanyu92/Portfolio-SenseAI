@@ -49,7 +49,66 @@ class PortfolioModel(private val app: Application) : AndroidViewModel(app) {
         return true
     }
 
-    private fun finish(report: JSONObject) {
+    var plan by mutableStateOf(prefs.getString("quantPlan",null)?.let(::JSONObject))
+        private set
+
+    private fun savePlan(value:JSONObject) {
+        plan=value
+        prefs.edit().putString("quantPlan",value.toString()).apply()
+    }
+
+    fun importPlan(uri:Uri) {
+        if(busy) return
+        busy=true
+        message="Calculating net trade outcomes…"
+        viewModelScope.launch {
+            try {
+                val data=withContext(Dispatchers.IO) {
+                    app.contentResolver.openInputStream(uri)!!.bufferedReader().use { reader ->
+                        val buf=CharArray(4096)
+                        val text=StringBuilder()
+                        while(true) { val n=reader.read(buf); if(n<0) break; text.append(buf,0,n); require(text.length<=2000000) { "Scenario exceeds 2 MB" } }
+                        JSONObject(text.toString())
+                    }
+                }
+                val calculated=QuantRuntime.run(app,data)
+                calculated.put("source","Imported scenario · "+data.optString("as_of","undated"))
+                savePlan(calculated)
+                message=if(calculated.str("status")=="ready") "Net trade plan calculated" else "Review plan diagnostics"
+            } catch(e:Exception) { message="Scenario could not be calculated: "+e.localizedMessage }
+            finally { busy=false }
+        }
+    }
+
+    fun reviewPlan() {
+        val original=plan ?: return
+        if(busy || original.str("status")!="ready") return
+        busy=true
+        message="Reviewing the calculated plan with NVIDIA…"
+        viewModelScope.launch {
+            try {
+                val note=withContext(Dispatchers.IO) { NvidiaAnalyzer.review(client,app.getString(R.string.nvidia_api_key),original) }
+                savePlan(JSONObject(original.toString()).put("review",note))
+                message="Review complete"
+            } catch(e:Exception) {message="Review unavailable: "+e.localizedMessage}
+            finally {busy=false}
+        }
+    }
+
+    private suspend fun finish(report: JSONObject) {
+        val rows=report.rows("holdings")
+        val items=JSONArray()
+        val known=rows.isNotEmpty() && rows.all { it.number("current_value")!=null && it.str("instrument_type") in listOf("stock","mutual_fund") }
+        if(known) {
+            rows.forEach { h ->
+                val fund=h.str("instrument_type")=="mutual_fund"
+                items.put(JSONObject().put("asset_id",h.str("isin").ifBlank { h.str("name") }).put("asset_type",if(fund) "MF_UNCLASSIFIED" else "STOCK").put("market_value",h.number("current_value")))
+            }
+        }
+        val diagnostics=if(known) runCatching { QuantRuntime.run(app,JSONObject().put("positions",items)) }
+            .getOrElse {JSONObject().put("status","inputs_required").put("reason","Import verified positions and market inputs to calculate the plan.")}
+        else JSONObject().put("status","inputs_required").put("reason","The report needs identifiable positions with INR market values.")
+        savePlan(diagnostics.put("source","Latest statement"))
         prefs.edit().putString("result", report.toString()).apply()
         result = report
         update("Complete")
