@@ -1,0 +1,50 @@
+[
+  {
+    "key": "sip",
+    "title": "SIP basics",
+    "summary": "Systematic Investment Plan lets you invest fixed amounts at regular intervals, averaging your purchase cost over time.",
+    "details": "A Systematic Investment Plan (SIP) is a disciplined method. Instead of a lump sum, you invest a fixed amount monthly in a mutual fund scheme.\n\nRupee-cost averaging: Buy more units when prices are low.\n\nCompounding: Returns reinvested, growing corpus over time.\n\nDisciplines saving: Auto-debit ensures consistency.\n\n₹5,000/month at 12% CAGR for 10 years → ₹11.6 lakh corpus."
+  },
+  {
+    "key": "diversification",
+    "title": "Diversification",
+    "summary": "Spreading investments across asset classes reduces total risk without proportionally reducing returns.",
+    "details": "Diversification allocates investments among various instruments to minimise single-asset exposure.\n\nCross-asset: Mix equity, debt, gold & REITs.\n\nCross-sector: Avoid concentration in only IT or PSU.\n\nCross-cap: Balance large-cap stability with mid/small-cap growth.\n\nA pure IT portfolio carries 2× the volatility of a diversified one."
+  },
+  {
+    "key": "elss",
+    "title": "ELSS & tax saving",
+    "summary": "Equity Linked Saving Schemes offer tax deductions under Section 80C with the shortest lock-in of 3 years.",
+    "details": "ELSS funds invest ≥80% in equities and qualify for ₹1.5 lakh deduction under Sec 80C.\n\nLock-in: 3 years — shortest among 80C instruments.\n\nReturns: Market-linked; historically 12–16% CAGR long-term.\n\nLTCG: Gains above ₹1 lakh taxed at 10% after lock-in.\n\nOn ₹1.5 lakh invested, save up to ₹46,800 tax (30% bracket)."
+  },
+  {
+    "key": "pnl",
+    "title": "Understanding P&L",
+    "summary": "Realised vs unrealised P&L, XIRR, and how to interpret your portfolio’s performance metrics.",
+    "details": "Unrealised P&L: Paper gains/losses on positions you still hold. Fluctuates daily.\n\nRealised P&L: Locked-in gains after you sell. Taxable event.\n\nAbsolute Return: (Current−Invested) / Invested × 100\n\nXIRR: Annualised return accounting for cash-flow timing — more accurate for SIPs.\n\nXIRR of 12% means your money grew at 12% p.a. compounded."
+  },
+  {
+    "key": "etf",
+    "title": "ETF vs mutual fund",
+    "summary": "Both hold a basket of assets, but ETFs trade live on exchanges while mutual funds are priced at end-of-day NAV.",
+    "details": "Feature ETF Mutual Fund\n\nTrading Live on exchange End-of-day NAV\n\nExpense Ratio 0.05–0.5% 0.5–2%\n\nMin Investment 1 unit ₹500 SIP\n\nLiquidity Intraday T+1 to T+3\n\nSIP available ✗ ✓"
+  },
+  {
+    "key": "rebalancing",
+    "title": "Portfolio rebalancing",
+    "summary": "Regularly realigning asset weights to target allocation keeps your risk profile intact as markets move.",
+    "details": "Time-based: Rebalance quarterly or annually.\n\nThreshold-based: Rebalance when any asset drifts >5% from target.\n\nTax-smart: Use new inflows first to avoid capital gains triggers.\n\nEquity grows 60% → 75%? Sell some to restore your 60/40 split."
+  },
+  {
+    "key": "psu",
+    "title": "PSU stocks & funds",
+    "summary": "Public Sector Undertakings offer dividend income and policy-driven growth, backed by government ownership.",
+    "details": "Dividend yield: PSUs often pay higher dividends due to policy mandates.\n\nPolicy tailwinds: Infrastructure thrust can drive strong sector rallies.\n\nRisks: Slower decision-making; subject to potential divestment.\n\nExamples: NTPC, NHPC, NALCO, SBI, BEL, ONGC."
+  },
+  {
+    "key": "gold",
+    "title": "Gold as an asset class",
+    "summary": "Gold ETFs and Sovereign Gold Bonds provide inflation hedge and portfolio insurance with tax advantages.",
+    "details": "Gold ETF: Backed by physical gold; expense ratio ~0.5%.\n\nGold FoF: Fund of funds investing into Gold ETFs — allows SIP.\n\nSGB: RBI-issued bonds with 2.5% annual interest + price appreciation. Tax-free on maturity.\n\nRecommended: 5–15% of portfolio for hedging inflation and equity volatility."
+  }
+]

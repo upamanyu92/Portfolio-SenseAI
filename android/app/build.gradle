@@ -1,0 +1,74 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.plugin.compose'
+}
+
+android {
+    namespace 'ai.portfoliosense'
+    compileSdk 36
+    defaultConfig {
+        applicationId 'ai.portfoliosense.android'
+        minSdk 33
+        targetSdk 35
+        versionCode 8
+        versionName '1.7'
+        def apiKey = providers.environmentVariable('NVIDIA_API_KEY').orNull
+        if (!apiKey || !(apiKey ==~ /nvapi-[A-Za-z0-9_-]+/)) {
+            throw new GradleException('Set NVIDIA_API_KEY before building the Android client.')
+        }
+        resValue 'string', 'nvidia_api_key', apiKey
+    }
+    buildFeatures { compose true }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions { jvmTarget = '17' }
+}
+
+dependencies {
+    testImplementation "junit:junit:4.13.2"
+    testImplementation "org.json:json:20250517"
+    implementation platform('androidx.compose:compose-bom:2024.12.01')
+    implementation 'androidx.work:work-runtime:2.10.0'
+    implementation 'com.tom-roush:pdfbox-android:2.0.27.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2'
+    implementation 'androidx.core:core-ktx:1.15.0'
+    implementation 'androidx.activity:activity-compose:1.9.3'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7'
+    implementation 'androidx.compose.material3:material3'
+    implementation 'androidx.compose.material:material-icons-core'
+    implementation 'com.squareup.okhttp3:okhttp:5.3.2'
+}
+
+// The APK carries its Python runtime and SciPy wheels for offline planning.
+def quantAssets = layout.buildDirectory.dir('quant-assets')
+def prepareQuant = tasks.register('prepareQuantAssets') {
+    def manifest = rootProject.file('quant-runtime.sha256')
+    def engine = rootProject.file('../quant/engine.py')
+    inputs.files(manifest, engine)
+    outputs.dir(quantAssets)
+    doLast {
+        def dest = quantAssets.get().dir('quant').asFile
+        dest.mkdirs()
+        manifest.eachLine { line ->
+            def (expected, name) = line.tokenize()
+            def file = new File(dest, name)
+            def digest = { f -> java.security.MessageDigest.getInstance('SHA-256').digest(f.bytes).encodeHex().toString() }
+            if (!file.exists() || digest(file) != expected) {
+                def tmp = new File(dest, name + '.tmp')
+                def localCache = providers.environmentVariable('PORTFOLIO_RUNTIME_DIR').orNull
+                def source = localCache ? new File(localCache, name).toURI().toURL() : new URL('https://cdn.jsdelivr.net/pyodide/v0.27.7/full/' + name)
+                source.withInputStream { src ->
+                    tmp.withOutputStream { it << src }
+                }
+                if (digest(tmp) != expected) throw new GradleException('Runtime checksum mismatch for ' + name)
+                java.nio.file.Files.move(tmp.toPath(),file.toPath(),java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+            }
+        }
+        new File(dest, 'engine.py').bytes = engine.bytes
+    }
+}
+android.sourceSets.main.assets.srcDir(quantAssets)
+tasks.named('preBuild').configure { dependsOn prepareQuant }

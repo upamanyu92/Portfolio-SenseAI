@@ -1,0 +1,91 @@
+{
+  "healthScore": 78,
+  "allocation": {
+    "labels": [
+      "IT",
+      "Pharma",
+      "Energy",
+      "Others"
+    ],
+    "data": [
+      25,
+      18,
+      15,
+      42
+    ],
+    "colors": [
+      "#00d4b8",
+      "#1a9fd4",
+      "#5a6a9a",
+      "#2a3a6a"
+    ]
+  },
+  "transparency": {
+    "labels": [
+      "Equity",
+      "Debt",
+      "Hybrid",
+      "REIT"
+    ],
+    "data": [
+      52,
+      28,
+      12,
+      8
+    ],
+    "colors": [
+      "#00d4b8",
+      "#1a9fd4",
+      "#7c3aed",
+      "#0f5fa8"
+    ]
+  },
+  "pulse": {
+    "bullish": 60,
+    "neutral": 30,
+    "bearish": 10
+  },
+  "confidenceScore": 85,
+  "confBasis": "Based on: 250+ news sources and sector trends.",
+  "suggestion": "Consider Rebalancing IT Weight",
+  "recommendations": [
+    {
+      "ticker": "TCS",
+      "action": "BUY",
+      "reason": "Sector Trend",
+      "price": "₹186.70"
+    },
+    {
+      "ticker": "RELIANCE",
+      "action": "SELL",
+      "reason": "Overvalued",
+      "price": "₹169.00"
+    },
+    {
+      "ticker": "INFY",
+      "action": "BUY",
+      "reason": "Sector Trend",
+      "price": "₹123.70"
+    },
+    {
+      "ticker": "REDI",
+      "action": "SELL",
+      "reason": "Overvalued",
+      "price": "₹153.50"
+    }
+  ],
+  "holdings": [
+    {
+      "name": "INFY",
+      "instrument_type": "stock",
+      "quantity": 25,
+      "current_value": 3100
+    },
+    {
+      "name": "Axis Small Cap Fund",
+      "instrument_type": "mutual_fund",
+      "quantity": 81.773,
+      "current_value": 9026.1
+    }
+  ]
+}
